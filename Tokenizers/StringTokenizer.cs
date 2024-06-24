@@ -18,7 +18,7 @@ public class StringTokenizer : Tokenizer
 
     /// <summary>
     /// This property indicates whether doubling the string literal bounder is a way to
-    /// escape it so it's included in the string literal rather than terminating the
+    /// escape it, so it's included in the string literal rather than terminating the
     /// literal, ala, SQL single-quoted strings.
     /// </summary>
     public bool RepeatBounderEscapes { get; set; }

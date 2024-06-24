@@ -7,8 +7,13 @@
         <LangVersion>preview</LangVersion>
         <Title>The Lex Parser</Title>
         <Authors>J. Stephen Kress</Authors>
-        <Description>A tokenizing lexical parser for C#.</Description>
-        <Copyright>Copyright 2024</Copyright>
+        <Description>A Lexical Parser in C#</Description>
+        <Copyright>Copyright © 2024</Copyright>
+        <PackageProjectUrl>https://github.com/jskress/Lex</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/jskress/Lex</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseUrl>https://github.com/jskress/Lex/blob/main/LICENSE.md</PackageLicenseUrl>
+        <PackageReleaseNotes>See docs/release-notes.md for details.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
