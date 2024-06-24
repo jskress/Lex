@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <LangVersion>preview</LangVersion>
+        <Title>The Lex Parser</Title>
+        <Authors>J. Stephen Kress</Authors>
+        <Description>A tokenizing lexical parser for C#.</Description>
+        <Copyright>Copyright 2024</Copyright>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="Tests\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Tests\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Tests\**" />
+    </ItemGroup>
+
+</Project>
