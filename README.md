@@ -2,7 +2,7 @@
 
 This repo contains the C# port of my **Lex** library.  I've been using it for decades (yes,
 that long) as the basis for almost all DSL or source code parsing work I've needed to do.  I
-hope you will find it useful.  See the [History](docs/history) page if you're interested in
+hope you will find it useful.  See the [History](docs/history.md) page if you're interested in
 how it evolved.
 
 ### Quick Start
