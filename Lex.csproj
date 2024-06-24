@@ -13,8 +13,15 @@
         <RepositoryUrl>https://github.com/jskress/Lex</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageLicenseUrl>https://github.com/jskress/Lex/blob/main/LICENSE.md</PackageLicenseUrl>
-        <PackageReleaseNotes>See docs/release-notes.md for details.</PackageReleaseNotes>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>https://github.com/jskress/Lex/blob/main/docs/release-notes.md</PackageReleaseNotes>
+        <PackageTags>lexical parser tokens clauses expressions</PackageTags>
+        <Version>1.0.1</Version>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
     <ItemGroup>
       <Compile Remove="Tests\**" />
