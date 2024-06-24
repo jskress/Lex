@@ -1,0 +1,235 @@
+
+top-level {
+    (repeat) { |parserSpecificationClause| |keywordsClause| |operatorsClause| |arbitraryTokenClause| |expressionClause| |defineSequentialClause| |defineSwitchClause| |switchClause| }
+}
+
+parserSpecificationClause {
+    "_parserSpec" ":" /string/
+}
+
+keywordsClause {
+    "_keywords"
+    ":"
+    (repeat=withItem) { "," /string/ }
+}
+
+operatorsClause {
+    "_operators"
+    ":"
+    (repeat=withItem) { "," "Ampersand" "And" "AndEqual" "Arrow" "Assignment" "At" "Backslash" "Coalesce" "Colon" "Comma" "Divide" "DivideEqual" "Dollar" "Dot" "DoubleArrow" "DoubleMinus" "DoublePlus" "Equal" "GreaterThan" "GreaterThanOrEqual" "Hash" "If" "LessThan" "LessThanOrEqual" "Minus" "MinusEqual" "Modulo" "Multiply" "MultiplyEqual" "Not" "NotEqual" "Or" "OrEqual" "Pipe" "Plus" "PlusEqual" "Power" "Range" "SemiColon" "Tilde" "Underscore" }
+}
+
+arbitraryTokenClause {
+    /identifier/
+    ":"
+    { "_bounder" "_comment" "_identifier" "_keyword" "_number" "_operator" "_string" "_whitespace" }
+    "("
+    /string/
+    ")"
+}
+
+defineSequentialClause {
+    /identifier/
+    ":"
+    (optional) { "?" }
+    |sequentialClause|
+    (optional) {
+        { "=>" /string/ }
+    }
+    (optional) {
+        { "{" |repetitionClause| "}" }
+    }
+}
+
+defineSwitchClause {
+    /identifier/
+    ":"
+    (optional) { "?" }
+    |switchClause|
+    (optional) {
+        { "??" /string/ }
+    }
+    (optional) {
+        { "{" |repetitionClause| "}" }
+    }
+}
+
+sequentialClause {
+    "{"
+    (repeat=withItem) { ">" |term| }
+    "}"
+}
+
+switchClause {
+    "["
+    (repeat=withItem) {
+        "|"
+        {
+            |term|
+            (optional) {
+                { "=>" /string/ }
+            }
+        }
+    }
+    "]"
+}
+
+term {
+    {
+        /identifier/
+        {
+            { "_bounder" "_comment" "_identifier" "_keyword" "_number" "_operator" "_string" "_whitespace" }
+            (optional) {
+                { "(" /string/ ")" }
+            }
+        }
+        |sequentialClause|
+        |switchClause|
+    }
+    (optional) {
+        { "{" |repetitionClause| "}" }
+    }
+    (optional) {
+        { "??" /string/ }
+    }
+}
+
+repetitionClause {
+    {
+        "+"
+        "*"
+        "?"
+        /number/
+        {
+            (optional) { /number/ }
+            ".."
+            (optional) { /number/ }
+        }
+    }
+}
+
+expressionClause {
+    "_expressions"
+    ":"
+    "{"
+    (repeat) { |expressionTerm| |unaryTerm| |binaryTerm| |trinaryTerm| |messages| }
+    "}"
+}
+
+expressionTerm {
+    "term"
+    ":"
+    "["
+    (repeat=withItem) {
+        ","
+        {
+            (repeat) {
+                /identifier/
+                {
+                    { "_bounder" "_comment" "_identifier" "_keyword" "_number" "_operator" "_string" "_whitespace" }
+                    (optional) {
+                        { "(" /string/ ")" }
+                    }
+                }
+                {
+                    "_expression"
+                    (optional) {
+                        {
+                            "("
+                            (optional) {
+                                {
+                                    |repetitionClause|
+                                    (optional) {
+                                        {
+                                            ","
+                                            (repeat=withItem) {
+                                                ","
+                                                {
+                                                    (repeat) { /identifier/ }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            ")"
+                        }
+                    }
+                }
+            }
+            (optional) {
+                { "=>" /string/ }
+            }
+        }
+    }
+    "]"
+}
+
+unaryTerm {
+    "unary"
+    ":"
+    "["
+    (repeat=withItem) {
+        ","
+        {
+            (optional) { "*" }
+            (repeat) { /identifier/ }
+            (optional) { "*" }
+        }
+        { ":" "postfixFirst" }
+    }
+    "]"
+}
+
+binaryTerm {
+    "binary"
+    ":"
+    "["
+    (repeat=withItem) {
+        ","
+        {
+            (repeat) { /identifier/ }
+            (optional) {
+                {
+                    ":"
+                    { "coalesce" "boolean" "equality" "comparison" "shift" "additive" "multiplicative" /number/ }
+                }
+            }
+        }
+    }
+    "]"
+}
+
+trinaryTerm {
+    "trinary"
+    ":"
+    "["
+    (repeat=withItem) {
+        ","
+        {
+            "("
+            (repeat) { /identifier/ }
+            ","
+            (repeat) { /identifier/ }
+            ")"
+        }
+    }
+    "]"
+}
+
+messages {
+    "messages"
+    ":"
+    "["
+    (repeat=withItem) {
+        {
+            (optional) { "," }
+        }
+        {
+            { "missingRequiredTerm" "missingRequiredToken" "tokenTypeMismatch" "missingExpressionSeparator" "notEnoughExpressions" "missingRightParenthesis" "missingRightOperator" }
+            ":"
+            /string/
+        }
+    }
+    "]"
+}

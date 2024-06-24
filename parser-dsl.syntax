@@ -1,0 +1,155 @@
+
+top-level (start, end) {
+    (repeat) {
+        {
+            { |basedNumbersClause| |boundersClause| |standardCommentsClause| |commentsClause| |identifiersClause| |sourcedKeywordsClause| |keywordsClause| |numbersClause| |sourcedOperatorsClause| |operatorsClause| |stringsClause| |whitespaceClause| }
+            (optional) { "report" "redact" }
+        }
+    }
+}
+
+basedNumbersClause {
+    "based"
+    "numbers"
+    (optional, repeat) {
+        {
+            "no"
+            { "hex" "octal" "binary" }
+        }
+    }
+}
+
+boundersClause {
+    "bounders"
+    (optional) {
+        { "of" /string/ }
+    }
+}
+
+sourcedOperatorsClause {
+    { "predefined" "dsl" }
+    "operators"
+    (optional) {
+        {
+            { "including" "excluding" }
+            (repeat=withItem) { "," /string/ /identifier/ }
+        }
+    }
+}
+
+operatorsClause {
+    "operators"
+    (repeat=withItem) { "," /string/ /identifier/ }
+}
+
+identifiersClause {
+    "identifiers"
+    (optional) {
+        {
+            "starting"
+            "with"
+            (repeat=withItem) { "," "defaults" "lowerCase" "upperCase" "letters" "digits" /string/ }
+        }
+    }
+    (optional) {
+        {
+            "containing"
+            (repeat=withItem) { "," "defaults" "lowerCase" "upperCase" "letters" "digits" /string/ }
+        }
+    }
+    (optional) { "lowerCase" "upperCase" "asIs" }
+}
+
+sourcedKeywordsClause {
+    "dsl"
+    "keywords"
+    (optional) {
+        {
+            { "including" "excluding" }
+            (repeat=withItem) { "," /string/ /identifier/ }
+        }
+    }
+    (optional) { "lowerCase" "upperCase" "asIs" }
+}
+
+keywordsClause {
+    "keywords"
+    (optional, repeat=withItem) { "," /string/ /identifier/ }
+    (optional) { "lowerCase" "upperCase" "asIs" }
+}
+
+numbersClause {
+    (optional) { "integral" "decimal" }
+    "numbers"
+    (optional) {
+        { "with" "signs" }
+    }
+}
+
+stringsClause {
+    {
+        {
+            "single"
+            "quoted"
+            "strings"
+            (optional) { "multiChar" }
+        }
+        { "double" "quoted" "strings" }
+        {
+            "triple"
+            "quoted"
+            "strings"
+            (optional) {
+                { "single" "line" }
+            }
+            (optional) {
+                { "not" "extensible" }
+            }
+        }
+        {
+            "strings"
+            "bounded"
+            "by"
+            /string/
+            (optional) { "multiLine" }
+        }
+    }
+    (optional) { "raw" }
+    (optional) {
+        { "repeat" "to" "escape" }
+    }
+}
+
+standardCommentsClause {
+    "standard"
+    "comments"
+    (optional, repeat) {
+        {
+            "or"
+            /string/
+            "and"
+            { /string/ "lineEnd" }
+        }
+    }
+}
+
+commentsClause {
+    "comments"
+    "bounded"
+    "by"
+    (repeat=withItem) {
+        "or"
+        {
+            /string/
+            "and"
+            { /string/ "lineEnd" }
+        }
+    }
+}
+
+whitespaceClause {
+    "whitespace"
+    (optional) {
+        { "with" "separated" "lineEnds" }
+    }
+}
