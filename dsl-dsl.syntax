@@ -77,6 +77,7 @@ switchClause {
 term {
     {
         /identifier/
+        "_expression"
         {
             { "_bounder" "_comment" "_identifier" "_keyword" "_number" "_operator" "_string" "_whitespace" }
             (optional) {

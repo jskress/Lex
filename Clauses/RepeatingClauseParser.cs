@@ -1,3 +1,4 @@
+using Lex.Expressions;
 using Lex.Parser;
 using Lex.Tokens;
 
@@ -34,6 +35,9 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
         _min = min;
         _max = max;
         _errorMessage = errorMessage;
+
+        if (_wrapped is ExpressionClauseParser expressionClauseParser && min == 0)
+            expressionClauseParser.SetIsOptional(true);
     }
 
     /// <summary>
@@ -45,6 +49,7 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
     protected override Clause TryParseClause(LexicalParser parser)
     {
         List<Token> tokens = [];
+        List<IExpressionTerm> expressions = [];
         string lastMatchedTag = null;
         int count = 0;
 
@@ -55,18 +60,39 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
             if (wrappedResult != null)
             {
                 tokens.AddRange(wrappedResult.Tokens);
+                expressions.AddRange(wrappedResult.Expressions);
 
                 count++;
 
                 if (count >= _max)
-                    return new Clause { Tag = wrappedResult.Tag, Tokens = tokens };
+                {
+                    return new Clause
+                    {
+                        Tag = wrappedResult.Tag,
+                        Tokens = tokens,
+                        Expressions = expressions
+                    };
+                }
 
                 lastMatchedTag = wrappedResult.Tag ?? lastMatchedTag;
             }
             else
             {
                 if (count >= _min)
-                    return new Clause { Tag = lastMatchedTag, Tokens = tokens };
+                {
+                    return new Clause
+                    {
+                        Tag = lastMatchedTag,
+                        Tokens = tokens,
+                        Expressions = expressions
+                    };
+                }
+
+                if (expressions.Count > 0)
+                {
+                    throw new TokenException(_errorMessage ?? "Syntax error near here.")
+                        { Token = parser.GetNextToken() };
+                }
 
                 parser.ReturnTokens(tokens);
 

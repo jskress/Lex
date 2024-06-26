@@ -199,7 +199,8 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
             return new Clause
             {
                 Tag = onMatchTag,
-                Tokens = parsed.Tokens
+                Tokens = parsed.Tokens,
+                Expressions = parsed.Expressions
             };
         }
 

@@ -1,3 +1,4 @@
+using Lex.Expressions;
 using Lex.Parser;
 using Lex.Tokens;
 
@@ -173,16 +174,26 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
     /// <returns>The list of tokens matching the clause, or <c>null</c>, if not.</returns>
     protected override Clause TryParseClause(LexicalParser parser)
     {
-        List<Token> result = [];
+        List<Token> tokens = [];
+        List<IExpressionTerm> expressions = [];
 
         foreach (Clause parsed in Children
                      .Select(clause => clause.TryParse(parser)))
         {
             if (parsed != null)
-                result.AddRange(parsed.Tokens);
+            {
+                tokens.AddRange(parsed.Tokens);
+                expressions.AddRange(parsed.Expressions);
+            }
             else
             {
-                parser.ReturnTokens(result);
+                if (expressions.Count > 0)
+                {
+                    throw new TokenException("Syntax error near here.")
+                        { Token = parser.GetNextToken() };
+                }
+
+                parser.ReturnTokens(tokens);
 
                 return null;
             }
@@ -191,7 +202,8 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
         return new Clause
         {
             Tag = _onMatchTag,
-            Tokens = result
+            Tokens = tokens,
+            Expressions = expressions
         };
     }
 }

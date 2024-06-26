@@ -218,8 +218,8 @@ public static partial class LexicalDslFactory
     }
 
     /// <summary>
-    /// This is a helper method for creating a variable pool to use while parsing the DSL
-    /// DSL.
+    /// This is a helper method for creating a variable pool to use while parsing a DSL
+    /// specification.
     /// </summary>
     /// <returns>The initialized variable pool.</returns>
     private static Dictionary<string, object> CreateVariablePool()
@@ -238,7 +238,7 @@ public static partial class LexicalDslFactory
     }
 
     /// <summary>
-    /// This method creates a lexical parser for parsing our DSL DSL.
+    /// This method creates a lexical parser for parsing a DSL specification.
     /// </summary>
     /// <returns>An appropriate parser.</returns>
     private static LexicalParser CreateAndConfigureParser(string source)
@@ -652,12 +652,26 @@ public static partial class LexicalDslFactory
             return (null, null, null, CreateSequentialClause(variables, tokens, dsl));
 
         Token token = tokens.RemoveFirst();
+        Type type = null;
         ClauseParser parser = null;
         string text = token.Text;
         string errorMessage = null;
 
+        // Handle expression references.
+        if (text == "_expression")
+        {
+            if (dsl.ExpressionParser == null)
+            {
+                throw new TokenException("The DSL does not contain the specification for an expression.")
+                {
+                    Token = token
+                };
+            }
+
+            parser = new ExpressionClauseParser(dsl.ExpressionParser);
+        }
         // Handle built-in type usage.
-        if (text[0] == '_' && TokenTypesMap.TryGetValue(text, out var type))
+        else if (text[0] == '_' && TokenTypesMap.TryGetValue(text, out type))
             (token, type) = ResolveTypeReference(tokens, text, type);
         else
             (token, type, parser) = ResolveVariableReference(variables, token, text);
