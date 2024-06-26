@@ -382,10 +382,12 @@ bracket,
 ### The Term Clause
 
 The term clause represents a sub-clause of a sequential or switch clause.  It may be one
-of four things:
+of five things:
 
 - An identifier.  In this case, the term represents a previously defined keyword, operator
   or other type of token.
+- An expression.  In this case, the parser will use the expression parser defined in the
+  DSL to parse an expression tree.
 - A token type.  In this case, the term represents matching on a type of token.  If the
   optional parenthetical clause is given, then a new token of the indicated type is created
   to match on.
@@ -397,6 +399,12 @@ of four things:
   <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/term.png">
   <img alt="Defining a sequential clause" src="images/dsl-dsl/term.png">
 </picture>
+
+When the term is an expression, it is important to know that, at that point, any terms
+that follow it must parse successfully since parsing an expression consumes all the
+relevant tokens, preventing the containing clause from being rolled back as happens, say,
+when a sequence isn't fully captured.  As such, you'll want to include an error message
+on all terms in the clause that follow the expression.
 
 This may optionally be followed by a [repetition clause](#the-repetition-clause).  Finally,
 a coalesce operator and string may be provided.

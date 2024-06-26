@@ -77,6 +77,9 @@ Use Lex to parse almost any computing language that is coded in text:
   command and control tools that provide a command line interface to a remote business
   server).
 
+See the [Use Cases](docs/use-cases.md) section of the documentation for some concrete
+examples.
+
 ### Extensible
 
 Lex deals with _typed_ tokens.  Each type of token has its own, dedicated parser or

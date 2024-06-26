@@ -41,7 +41,7 @@ public class SingleTokenClauseParser : ClauseParser
         return haveToken switch
         {
             false when _errorMessage != null => throw new TokenException(_errorMessage) {Token = parser.GetNextToken()},
-            true => new Clause { Tokens = [token] },
+            true => new Clause { Tokens = [token], Expressions = [] },
             _ => null
         };
     }
