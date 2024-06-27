@@ -35,9 +35,6 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
         _min = min;
         _max = max;
         _errorMessage = errorMessage;
-
-        if (_wrapped is ExpressionClauseParser expressionClauseParser && min == 0)
-            expressionClauseParser.SetIsOptional(true);
     }
 
     /// <summary>
@@ -55,6 +52,9 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
 
         while (true)
         {
+            if (_wrapped is ExpressionClauseParser expressionClauseParser)
+                expressionClauseParser.SetIsOptional(expressions.Count >= _min);
+
             Clause wrappedResult = _wrapped.TryParse(parser);
 
             if (wrappedResult != null)
