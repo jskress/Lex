@@ -1,5 +1,9 @@
 ## Release Notes
 
+### 1.1.0.1
+
+- Minor bug fix relating to wrapping an expression clause with a repeating clause.
+
 ### 1.1.0
 
 - Added support for an expression clause, allowing expressions to be expected in the

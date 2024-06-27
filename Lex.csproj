@@ -16,7 +16,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageReleaseNotes>https://github.com/jskress/Lex/blob/main/docs/release-notes.md</PackageReleaseNotes>
         <PackageTags>dsl lexical parser tokens clauses expressions</PackageTags>
-        <Version>1.1.0</Version>
+        <Version>1.1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
