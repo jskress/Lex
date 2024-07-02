@@ -49,6 +49,16 @@ Lex made it easy for this tool to "understand" the subset of the C# class declar
 syntax, including attribute interpretation, so that a TypeScript equivalent of the class
 could be generated.  This allowed the development project to single-source its DTOs.
 
+### Command and Control
+
+Lex has also made it easy to create a command line tool that will connect to a remote
+server with something like `ssh` and, on the server, interpret commands and queries that
+the user types, producing appropriate output.
+
+DSLs can be a good fit here because they are necessarily tightly controlled, making it
+easier to handle things like security and permissions.  It also greatly reduces attack
+vectors like code injection attacks.
+
 ### Ray Tracer
 
 A ray tracer has an obvious need for a DSL for specifying the structure of a scene to
