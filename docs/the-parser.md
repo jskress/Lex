@@ -38,7 +38,7 @@ parser.  A pretty common configuration might look like ths:
 ```csharp
 _ = new CommentTokenizer(parser).AddStandardComments();
 _ = new IdTokenizer(parser);
-- = new SingleQuotedStringTokenizer(parser)
+_ = new SingleQuotedStringTokenizer(parser)
     {
         RepresentsCharacter = false
     };
