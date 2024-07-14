@@ -48,13 +48,13 @@ identifiersClause {
         {
             "starting"
             "with"
-            (repeat=withItem) { "," "defaults" "lowerCase" "upperCase" "letters" "digits" /string/ }
+            (repeat=withItem) { "," "defaults" "lowerCase" "upperCase" "letters" "greekLowers" "greekUppers" "greekLetters" "digits" /string/ }
         }
     }
     (optional) {
         {
             "containing"
-            (repeat=withItem) { "," "defaults" "lowerCase" "upperCase" "letters" "digits" /string/ }
+            (repeat=withItem) { "," "defaults" "lowerCase" "upperCase" "letters" "greekLowers" "greekUppers" "greekLetters" "digits" /string/ }
         }
     }
     (optional) { "lowerCase" "upperCase" "asIs" }

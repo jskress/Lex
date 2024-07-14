@@ -19,9 +19,24 @@ public class IdTokenizer : Tokenizer
     public const string Uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     /// <summary>
+    /// This constant holds the set of upper case Greek letters.
+    /// </summary>
+    public const string GreekLowers = "αβγδεζηθικλμνξοπρστυφχψω";
+
+    /// <summary>
+    /// This constant holds the set of upper case Greek letters.
+    /// </summary>
+    public const string GreekUppers = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ";
+
+    /// <summary>
     /// This constant holds the set of letters.
     /// </summary>
     public const string Letters = Lowers + Uppers;
+
+    /// <summary>
+    /// This constant holds the set of Greek letters.
+    /// </summary>
+    public const string Greek = GreekLowers + GreekUppers;
 
     /// <summary>
     /// This constant holds the default identifier starters we may use.

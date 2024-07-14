@@ -91,10 +91,14 @@ public static partial class LexicalParserFactory
             "lowerCase" => IdTokenizer.Lowers,
             "upperCase" => IdTokenizer.Uppers,
             "letters" => IdTokenizer.Letters,
+            "greekLowers" => IdTokenizer.GreekLowers,
+            "greekUppers" => IdTokenizer.GreekUppers,
+            "greekLetters" => IdTokenizer.Greek,
             "digits" => IdTokenizer.Digits,
             _ => throw new TokenException
                 ("Expecting \"defaults\", \"lowerCase\", \"upperCase\", \"letters\", " +
-                 "\"digits\" or a string here.")
+                 "\"greekLowers\", \"greekUppers\", \"greekLetters\", \"digits\" or a " +
+                 "string here.")
             {
                 Token = token
             }
