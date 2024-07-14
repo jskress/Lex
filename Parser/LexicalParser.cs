@@ -92,7 +92,7 @@ public sealed class LexicalParser : IDisposable
             ch = (char) data;
 
             Tokenizer tokenizer = _tokenizers
-                .FirstOrDefault(t => t.CanStart(ch));
+                .FirstOrDefault(t => t.StartsAToken(ch));
 
             if (tokenizer == null)
                 break;

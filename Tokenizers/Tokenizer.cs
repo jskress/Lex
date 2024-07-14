@@ -59,6 +59,18 @@ public abstract class Tokenizer
 
     /// <summary>
     /// This method is used to inform the parser whether this tokenizer can start a token
+    /// with the specified character.
+    /// </summary>
+    /// <param name="ch">The character to check (or begin checking with).</param>
+    /// <returns><c>true</c> if this tokenizer accepts the job of parsing the next token
+    /// or <c>false</c> if not.</returns>
+    internal bool StartsAToken(char ch)
+    {
+        return CanStart(ch);
+    }
+
+    /// <summary>
+    /// This method is used to inform the parser whether this tokenizer can start a token
     /// with the specified character.  If more characters are required to be read for this
     /// decision to be made, they must be returned to the parser such that the stream of
     /// characters is unchanged.
@@ -66,7 +78,7 @@ public abstract class Tokenizer
     /// <param name="ch">The character to check (or begin checking with).</param>
     /// <returns><c>true</c> if this tokenizer accepts the job of parsing the next token
     /// or <c>false</c> if not.</returns>
-    internal abstract bool CanStart(char ch);
+    protected abstract bool CanStart(char ch);
 
     /// <summary>
     /// This method is called to use this tokenizer to actually parse a token from the
