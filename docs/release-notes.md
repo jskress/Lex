@@ -1,5 +1,13 @@
 ## Release Notes
 
+### 1.1.1
+
+- Added support for Greek letters to be part of identifiers as they can be common in some
+  DSLs.
+
+- The `CanStart()` method on tokenizers is meant to be protected, not internal.  Without
+  that, custom tokenizers outside the library cannot be written.
+
 ### 1.1.0.1
 
 - Minor bug fix relating to wrapping an expression clause with a repeating clause.

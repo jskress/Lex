@@ -9,10 +9,11 @@ public static partial class LexicalParserFactory
         // Define our keywords.
         _keywords: 'and', 'asIs', 'based', 'binary', 'bounded', 'bounders', 'by', 'comments',
                    'containing', 'decimal', 'defaults', 'digits', 'double', 'dsl', 'escape',
-                   'excluding', 'extensible', 'hex', 'identifiers', 'including', 'integral',
-                   'keywords', 'letters', 'line', 'lineEnd', 'lineEnds', 'lowerCase', 'multiChar',
-                   'multiLine', 'no', 'not', 'numbers', 'numbers', 'octal', 'of', 'operators',
-                   'or', 'predefined', 'quoted', 'raw', 'redact', 'repeat', 'report', 'separated',
+                   'excluding', 'extensible', 'greekLetters', 'greekLowers', 'greekUppers',
+                   'hex', 'identifiers', 'including', 'integral', 'keywords', 'letters',
+                   'line', 'lineEnd', 'lineEnds', 'lowerCase', 'multiChar', 'multiLine',
+                   'no', 'not', 'numbers', 'numbers', 'octal', 'of', 'operators', 'or',
+                   'predefined', 'quoted', 'raw', 'redact', 'repeat', 'report', 'separated',
                    'signs', 'single', 'standard', 'starting', 'strings', 'to', 'triple',
                    'upperCase', 'whitespace', 'with'
         _operators: comma

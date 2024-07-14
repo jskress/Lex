@@ -42,7 +42,7 @@ public class BasedNumberTokenizer : Tokenizer
     /// <param name="ch">The character to check (or begin checking with).</param>
     /// <returns><c>true</c> if this tokenizer accepts the job of parsing the next token
     /// or <c>false</c> if not.</returns>
-    internal override bool CanStart(char ch)
+    protected override bool CanStart(char ch)
     {
         if (ch == '0')
         {

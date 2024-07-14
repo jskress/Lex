@@ -10,9 +10,9 @@ public class IdTokenizerConfigurationTests : LexicalParserDslTestsBase
         new ErrorEntry("identifiers starting", "Expecting \"with\" to follow \"start\" here."),
         new ErrorEntry("identifiers starting or", "Expecting \"with\" to follow \"start\" here."),
         new ErrorEntry("identifiers starting with", "Expecting a string or keyword here."),
-        new ErrorEntry("identifiers starting with or", "Expecting \"defaults\", \"lowerCase\", \"upperCase\", \"letters\", \"digits\" or a string here."),
+        new ErrorEntry("identifiers starting with or", "Expecting \"defaults\", \"lowerCase\", \"upperCase\", \"letters\", \"greekLowers\", \"greekUppers\", \"greekLetters\", \"digits\" or a string here."),
         new ErrorEntry("identifiers containing", "Expecting a string or keyword here."),
-        new ErrorEntry("identifiers containing or", "Expecting \"defaults\", \"lowerCase\", \"upperCase\", \"letters\", \"digits\" or a string here.")
+        new ErrorEntry("identifiers containing or", "Expecting \"defaults\", \"lowerCase\", \"upperCase\", \"letters\", \"greekLowers\", \"greekUppers\", \"greekLetters\", \"digits\" or a string here.")
     ];
 
     [TestMethod]
