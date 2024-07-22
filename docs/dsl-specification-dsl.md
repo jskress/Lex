@@ -32,15 +32,6 @@ specification looks like this:
   <img alt="Top level DSL factory DSL" src="images/dsl-dsl/top-level.png">
 </picture>
 
-When defining named sequential or switch clauses, there may be times when circular
-references, which may take the form of two clauses that refer to each other, or a clause
-that needs to refer to itself, are required.  You support this by specifying the definition
-of the clause twice.  The first time, the clause must be defined empty.  The second
-time should contain the full definition.  If you need to enable debugging for a clause in
-this case, do so on the second occurrence, not the first.  When the DSL factory finds this
-situation, it takes the second declaration as a continuation of the first.  **Note:** use
-such clauses with care as the grammar can become problematic.
-
 You may specify one, and only one, switch clause without a leading label that will act as
 the top-level clause parser for the DSL.  Typically, this will contain the clause parsers
 for each of your top-level language constructs.  You will likely want to include a tag for

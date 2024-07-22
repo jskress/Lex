@@ -149,11 +149,6 @@ public static partial class LexicalDslFactory
         .Then("Expecting a left parenthesis here.", BounderToken.LeftParen)
         .Then("Expecting a string here.", typeof(StringToken))
         .Then("Expecting a right parenthesis here.", BounderToken.RightParen);
-    private static readonly ClauseParser DefineEmptySequentialClauseParser = new SequentialClauseParser()
-        .Matching(typeof(IdToken))
-        .Then(OperatorToken.Colon)
-        .Then(BounderToken.OpenBrace)
-        .Then(BounderToken.CloseBrace);
     private static readonly ClauseParser DefineSequentialClauseParser = new SequentialClauseParser()
         .Matching(typeof(IdToken))
         .Then("Expecting a colon here.", OperatorToken.Colon)
@@ -161,11 +156,6 @@ public static partial class LexicalDslFactory
         .Then(SequentialClauseParser)
         .Then(SetTagClauseParser)
         .Then(RepetitionClauseParser);
-    private static readonly ClauseParser DefineEmptySwitchClauseParser = new SequentialClauseParser()
-        .Matching(typeof(IdToken))
-        .Then(OperatorToken.Colon)
-        .Then(BounderToken.OpenBracket)
-        .Then(BounderToken.CloseBracket);
     private static readonly ClauseParser DefineSwitchClauseParser = new SequentialClauseParser()
         .Matching(typeof(IdToken))
         .Then("Expecting a colon here.", OperatorToken.Colon)
@@ -181,15 +171,13 @@ public static partial class LexicalDslFactory
         .Or(OperatorListClause, nameof(HandleOperatorListClause))
         .Or(ExpressionsClause, nameof(HandleExpressionsClause))
         .Or(DefineTokenClauseParser, nameof(HandleTokenClause))
-        .Or(DefineEmptySequentialClauseParser, nameof(HandleDefineEmptySequentialClause))
         .Or(DefineSequentialClauseParser, nameof(HandleDefineSequentialClause))
-        .Or(DefineEmptySwitchClauseParser, nameof(HandleDefineEmptySwitchClause))
         .Or(DefineSwitchClauseParser, nameof(HandleDefineSwitchClause))
         .Or(SwitchClauseParser, nameof(HandleTopLevelOrClause))
         .OnNoClausesMatched("Unexpected token found.");
     private static readonly Dsl OurDsl = new (TopLevelClauseParser);
 
-    private static readonly Dictionary<string, Action<LexicalParser, Dictionary<string, object>, List<Token>, Dsl>>
+    private static readonly Dictionary<string, Action<DslParsingContext>>
         TagHandlers = new ()
         {
             { nameof(HandleParserSpecClause), HandleParserSpecClause },
@@ -197,9 +185,7 @@ public static partial class LexicalDslFactory
             { nameof(HandleOperatorListClause), HandleOperatorListClause },
             { nameof(HandleExpressionsClause), HandleExpressionsClause },
             { nameof(HandleTokenClause), HandleTokenClause },
-            { nameof(HandleDefineEmptySequentialClause), HandleDefineEmptySequentialClause },
             { nameof(HandleDefineSequentialClause), HandleDefineSequentialClause },
-            { nameof(HandleDefineEmptySwitchClause), HandleDefineEmptySwitchClause },
             { nameof(HandleDefineSwitchClause), HandleDefineSwitchClause },
             { nameof(HandleTopLevelOrClause), HandleTopLevelOrClause }
         };
@@ -220,15 +206,20 @@ public static partial class LexicalDslFactory
     /// <returns>The prepared DSL.</returns>
     public static Dsl CreateFrom(string languageSpec)
     {
-        Dictionary<string, object> variables = CreateVariablePool();
-        Dsl theirDsl = new ();
-
         using LexicalParser parser = CreateAndConfigureParser(languageSpec);
+        DslParsingContext context = new DslParsingContext()
+        {
+            Parser = parser,
+            Variables = CreateVariablePool(),
+            Dsl = new Dsl()
+        };
 
         while (!parser.IsAtEnd())
-            ProcessNextClause(parser, OurDsl.ParseNextClause(parser), variables, theirDsl);
+            ProcessNextClause(context, OurDsl.ParseNextClause(parser));
 
-        return theirDsl;
+        FillInClauses(context);
+
+        return context.Dsl;
     }
 
     /// <summary>
@@ -284,66 +275,76 @@ public static partial class LexicalDslFactory
     /// <summary>
     /// This method is used to interpret the next clause from the source DSL specification.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
+    /// <param name="context">The current parsing context.</param>
     /// <param name="clause">The result of parsing the next clause.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void ProcessNextClause(LexicalParser parser, Clause clause, Dictionary<string, object> variables, Dsl dsl)
+    private static void ProcessNextClause(DslParsingContext context, Clause clause)
     {
-        if (TagHandlers.TryGetValue(clause.Tag, out Action<LexicalParser, Dictionary<string, object>, List<Token>, Dsl> handler))
+        if (TagHandlers.TryGetValue(clause.Tag, out Action<DslParsingContext> handler))
         {
-            List<Token> tokens = [..clause.Tokens];
+            context.Tokens = [..clause.Tokens];
 
-            handler.Invoke(parser, variables, tokens, dsl);
+            handler(context);
+        }
+    }
+
+    /// <summary>
+    /// This method is used to fill in all our named sequential and switch clauses.
+    /// </summary>
+    /// <param name="context">The current parsing context.</param>
+    private static void FillInClauses(DslParsingContext context)
+    {
+        foreach (ClauseParserSource<SequentialClauseParser> source in context.SequentialClauseSources)
+        {
+            context.Tokens = source.Tokens;
+
+            CreateSequentialClause(context, source.Parser);
+
+            source.Stored.SetDebugging(source.Debug);
+        }
+
+        foreach (ClauseParserSource<SwitchClauseParser> source in context.SwitchClauseSources)
+        {
+            context.Tokens = source.Tokens;
+
+            CreateSwitchClause(context, source.Parser);
+
+            source.Stored.SetDebugging(source.Debug);
         }
     }
 
     /// <summary>
     /// This method is used to process the parser specification clause.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleParserSpecClause(
-        LexicalParser parser, IDictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    /// <param name="context">The current parsing context.</param>
+    private static void HandleParserSpecClause(DslParsingContext context)
     {
-        dsl.SetLexicalParserSpec(tokens[2].Text);
+        context.Dsl.SetLexicalParserSpec(context.Tokens[2].Text);
     }
 
     /// <summary>
     /// This method is used to process the keywords specification clause.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleKeywordListClause(
-        LexicalParser parser, IDictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    /// <param name="context">The current parsing context.</param>
+    private static void HandleKeywordListClause(DslParsingContext context)
     {
-        foreach (string text in tokens[2..]
+        foreach (string text in context.Tokens[2..]
                      .Where(token => token is StringToken)
                      .Select(token => token.Text))
         {
             KeywordToken token = new KeywordToken(text);
 
-            variables[text] = token;
-
-            dsl.AddKeyword(token);
+            context.Variables[text] = token;
+            context.Dsl.AddKeyword(token);
         }
     }
 
     /// <summary>
     /// This method is used to process the operators specification clause.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleOperatorListClause(
-        LexicalParser parser, IDictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    /// <param name="context">The current parsing context.</param>
+    private static void HandleOperatorListClause(DslParsingContext context)
     {
-        foreach (string text in tokens[2..]
+        foreach (string text in context.Tokens[2..]
                      .Where(token => token is IdToken)
                      .Select(token => token.Text))
         {
@@ -353,45 +354,40 @@ public static partial class LexicalDslFactory
             {
                 foreach (KeyValuePair<string,OperatorToken> pair in OperatorToken.NamedOperators)
                 {
-                    variables[pair.Key] = pair.Value;
-
-                    dsl.AddOperator(pair.Value);
+                    context.Variables[pair.Key] = pair.Value;
+                    context.Dsl.AddOperator(pair.Value);
                 }
             }
             else if (OperatorToken.NamedOperators.TryGetValue(lowered, out OperatorToken token))
             {
-                variables[text] = token;
-
-                dsl.AddOperator(token);
+                context.Variables[text] = token;
+                context.Dsl.AddOperator(token);
             }
-            else if (variables.TryGetValue(text, out object value) && value is OperatorToken operatorToken)
-                dsl.AddOperator(operatorToken);
+            else if (context.Variables.TryGetValue(text, out object value) &&
+                     value is OperatorToken operatorToken)
+                context.Dsl.AddOperator(operatorToken);
         }
     }
 
     /// <summary>
     /// This method is used to process the definition of a type or token term.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleTokenClause(
-        LexicalParser parser, IDictionary<string, object> variables, IReadOnlyList<Token> tokens, Dsl dsl)
+    /// <param name="context">The current parsing context.</param>
+    private static void HandleTokenClause(DslParsingContext context)
     {
-        string variableName = tokens[0].Text;
+        string variableName = context.Tokens[0].Text;
 
-        Token token = CreateToken(tokens[2].Text, (StringToken) tokens[4]);
+        Token token = CreateToken(context.Tokens[2].Text, (StringToken) context.Tokens[4]);
 
-        variables[variableName] = token;
+        context.Variables[variableName] = token;
 
         switch (token)
         {
             case KeywordToken keywordToken:
-                dsl.AddKeyword(keywordToken);
+                context.Dsl.AddKeyword(keywordToken);
                 break;
             case OperatorToken operatorToken:
-                dsl.AddOperator(operatorToken);
+                context.Dsl.AddOperator(operatorToken);
                 break;
         }
     }
@@ -421,78 +417,35 @@ public static partial class LexicalDslFactory
     }
 
     /// <summary>
-    /// This method is used to process the definition of an empty and clause.
-    /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleDefineEmptySequentialClause(
-        LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
-    {
-        string variableName = tokens[0].Text;
-
-        variables[variableName] = new SequentialClauseParser();
-    }
-
-    /// <summary>
     /// This method is used to process the definition of an and clause.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleDefineSequentialClause(
-        LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    /// <param name="context">The current parsing context.</param>
+    private static void HandleDefineSequentialClause(DslParsingContext context)
     {
-        Token nameToken = tokens[0];
-        string variableName = nameToken.Text;
-        bool debug = false;
-
-        tokens.RemoveRange(0, 2);
-
-        if (tokens[0].Matches(OperatorToken.If))
-        {
-            debug = true;
-
-            tokens.RemoveFirst();
-        }
-
-        ClauseParser clauseParser = CreateSequentialClause(variables, tokens, dsl, nameToken)
-            .Named(variableName);
-
-        clauseParser.SetDebugging(debug);
-
-        dsl.AddNamedClauseParser(variableName, clauseParser);
-
-        variables[variableName] = clauseParser;
-    }
-
-    /// <summary>
-    /// This method is used to process the definition of an empty or clause.
-    /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleDefineEmptySwitchClause(
-        LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
-    {
-        string variableName = tokens[0].Text;
-
-        variables[variableName] = new SwitchClauseParser();
+        StoreEmptyClauseParser(context, context.SequentialClauseSources);
     }
 
     /// <summary>
     /// This method is used to process the definition of an or clause.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleDefineSwitchClause(
-        LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    /// <param name="context">The current parsing context.</param>
+    private static void HandleDefineSwitchClause(DslParsingContext context)
     {
+        StoreEmptyClauseParser(context, context.SwitchClauseSources);
+    }
+
+    /// <summary>
+    /// This is a helper method used to create and store an empty sequential or switch
+    /// clause parser.
+    /// </summary>
+    /// <param name="context">The current parsing context.</param>
+    /// <param name="setAsideList">The list to set aside the clause's tokens for later
+    /// processing.</param>
+    private static void StoreEmptyClauseParser<TParser>(
+        DslParsingContext context, List<ClauseParserSource<TParser>> setAsideList)
+        where TParser : ClauseParser, new()
+    {
+        List<Token> tokens = context.Tokens;
         Token nameToken = tokens[0];
         string variableName = nameToken.Text;
         bool debug = false;
@@ -506,35 +459,72 @@ public static partial class LexicalDslFactory
             tokens.RemoveFirst();
         }
 
-        ClauseParser clauseParser = CreateSwitchClause(variables, tokens, dsl, nameToken)
-            .Named(variableName);
+        TParser clauseParser = new TParser();
+        (List<Token> clauseTokens, List<Token> repeatTokens) = IsolateRepeatClauseTokens(tokens);
+        (_, _, _, ClauseParser storedParser) = WrapWithRepeatIfNeeded(
+            repeatTokens, null, null, null, clauseParser);
 
-        clauseParser.SetDebugging(debug);
+        storedParser.Named(variableName);
 
-        dsl.AddNamedClauseParser(variableName, clauseParser);
+        context.Dsl.AddNamedClauseParser(variableName, storedParser);
+        context.Variables[variableName] = storedParser;
 
-        variables[variableName] = clauseParser;
+        setAsideList.Add(new ClauseParserSource<TParser>(
+            storedParser, clauseParser, clauseTokens, debug));
+    }
+
+    /// <summary>
+    /// This is a helper method for cleaving off any repeat clause there might be.
+    /// </summary>
+    /// <param name="tokens">The tokens to start with.</param>
+    /// <returns>A tuple containing the token list for the main clause only and a separate
+    /// list with any repeat clause tokens.</returns>
+    private static (List<Token>, List<Token>) IsolateRepeatClauseTokens(List<Token> tokens)
+    {
+        Token starter = tokens.First();
+        Token ender = BounderToken.OpenBracket.Matches(starter)
+            ? BounderToken.CloseBracket
+            : BounderToken.CloseBrace;
+        int depth = 0;
+        int index;
+
+        // This loop will scan the tokens for the final closing bounder.
+        for (index = 0; index < tokens.Count; index++)
+        {
+            if (starter.Matches(tokens[index]))
+                depth++;
+            else if (ender.Matches(tokens[index]))
+            {
+                depth--;
+                
+                if (depth == 0)
+                    break;
+            }
+        }
+
+        // Point to after the main clause.  If there's anything after it, it will
+        // need to be a repeat clause.
+        index = Math.Min(index + 1, tokens.Count);
+
+        return (tokens[..index], tokens[index..]);
     }
 
     /// <summary>
     /// This method is used to process the definition of a top-level or clause.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleTopLevelOrClause(
-        LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    /// <param name="context">The current parsing context.</param>
+    private static void HandleTopLevelOrClause(DslParsingContext context)
     {
         try
         {
-            dsl.SetTopLevelClause(CreateSwitchClause(variables, tokens, dsl).Named("Top Level Clause"));
+            context.Dsl.SetTopLevelClause(CreateSwitchClause(context)
+                .Named("Top Level Clause"));
         }
         catch (ArgumentException exception)
         {
             throw new TokenException(exception.Message)
             {
-                Token = tokens[0]
+                Token = context.Tokens[0]
             };
         }
     }
@@ -542,27 +532,26 @@ public static partial class LexicalDslFactory
     /// <summary>
     /// This method creates an "or" (switch) clause parser.
     /// </summary>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    /// <param name="nameToken">A name to use if we need to try to extend an already
-    /// defined sequential clause.</param>
+    /// <param name="context">The current parsing context.</param>
+    /// <param name="parser">The parser to fill in, if it already exists.</param>
     /// <returns>The configured switch clause.</returns>
     private static ClauseParser CreateSwitchClause(
-        Dictionary<string, object> variables, List<Token> tokens, Dsl dsl, Token nameToken = null)
+        DslParsingContext context, SwitchClauseParser parser = null)
     {
-        SwitchClauseParser parser = LookUpOrCreate<SwitchClauseParser>(variables, nameToken);
         bool first = true;
 
-        tokens.RemoveFirst();
+        parser ??= new SwitchClauseParser();
+
+        context.Tokens.RemoveFirst();
 
         do
         {
-            (Token token, Type type, string errorMessage, ClauseParser clauseParser) = ParseTerm(variables, tokens, dsl);
+            (Token token, Type type, string errorMessage, ClauseParser clauseParser) =
+                ParseTerm(context);
             string tag = null;
 
-            if (OperatorToken.DoubleArrow.Matches(tokens.FirstOrDefault()))
-                (_, tag) = (tokens.RemoveFirst(), tokens.RemoveFirst().Text);
+            if (OperatorToken.DoubleArrow.Matches(context.Tokens.FirstOrDefault()))
+                (_, tag) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst().Text);
 
             if (token != null)
             {
@@ -588,39 +577,38 @@ public static partial class LexicalDslFactory
 
             first = false;
 
-        } while (OperatorToken.Pipe.Matches(tokens.RemoveFirst()));
+        } while (OperatorToken.Pipe.Matches(context.Tokens.RemoveFirst()));
 
         // If we're here, we've just eaten the closing bracket, so check for an error message.
-        if (OperatorToken.Coalesce.Matches(tokens.FirstOrDefault()))
+        if (OperatorToken.Coalesce.Matches(context.Tokens.FirstOrDefault()))
         {
-            (_, string onNoMatch) = (tokens.RemoveFirst(), tokens.RemoveFirst().Text);
+            (_, string onNoMatch) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst().Text);
 
             parser.OnNoClausesMatched(onNoMatch);
         }
 
-        return WrapWithRepeatIfNeeded(tokens, null, null, null, parser).Item4;
+        return WrapWithRepeatIfNeeded(context.Tokens, null, null, null, parser).Item4;
     }
 
     /// <summary>
     /// This method creates an "and" (sequence) clause parser.
     /// </summary>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    /// <param name="nameToken">A name to use if we need to try to extend an already
-    /// defined sequential clause.</param>
-    /// <returns>The configured switch clause.</returns>
+    /// <param name="context">The current parsing context.</param>
+    /// <param name="parser">The parser to fill in, if it already exists.</param>
+    /// <returns>The configured sequential clause.</returns>
     private static ClauseParser CreateSequentialClause(
-        Dictionary<string, object> variables, List<Token> tokens, Dsl dsl, Token nameToken = null)
+        DslParsingContext context, SequentialClauseParser parser = null)
     {
-        SequentialClauseParser parser = LookUpOrCreate<SequentialClauseParser>(variables, nameToken);
         bool first = true;
 
-        tokens.RemoveFirst();
+        parser ??= new SequentialClauseParser();
+
+        context.Tokens.RemoveFirst();
 
         do
         {
-            (Token token, Type type, string errorMessage, ClauseParser clauseParser) = ParseTerm(variables, tokens, dsl);
+            (Token token, Type type, string errorMessage, ClauseParser clauseParser) =
+                ParseTerm(context);
 
             if (token != null)
             {
@@ -646,87 +634,60 @@ public static partial class LexicalDslFactory
 
             first = false;
 
-        } while (OperatorToken.GreaterThan.Matches(tokens.RemoveFirst()));
+        } while (OperatorToken.GreaterThan.Matches(context.Tokens.RemoveFirst()));
 
         // If we're here, we've just eaten the closing brace, so check for a tag.
-        if (OperatorToken.DoubleArrow.Matches(tokens.FirstOrDefault()))
+        if (OperatorToken.DoubleArrow.Matches(context.Tokens.FirstOrDefault()))
         {
-            (_, string tag) = (tokens.RemoveFirst(), tokens.RemoveFirst().Text);
+            (_, string tag) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst().Text);
 
             parser.OnMatchTag(tag);
         }
 
-        return WrapWithRepeatIfNeeded(tokens, null, null, null, parser).Item4;
-    }
-
-    /// <summary>
-    /// This is a helper method for looking up or creating a clause parser.
-    /// </summary>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="nameToken">The token holding the name to look for.</param>
-    /// <returns>Either a newly created parser or the one already known by the given name.</returns>
-    private static TParser LookUpOrCreate<TParser>(Dictionary<string, object> variables, Token nameToken)
-        where TParser : ClauseParser, new()
-    {
-        if (nameToken != null && variables.TryGetValue(nameToken.Text, out object value))
-        {
-            if (value is TParser clauseParser)
-                return clauseParser;
-
-            throw new TokenException($"There is already a variable named, {nameToken.Text}, of a different type.")
-            {
-                Token = nameToken
-            };
-        }
-
-        return new TParser();
+        return WrapWithRepeatIfNeeded(context.Tokens, null, null, null, parser).Item4;
     }
 
     /// <summary>
     /// This method is used to determine what sort of term is next in the given token list
     /// and create the appropriate representation.
     /// </summary>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
+    /// <param name="context">The current parsing context.</param>
     /// <returns>A tuple containing one of a token, a type or a clause parser. For the first
     /// two, an error message may also be provided.</returns>
-    private static (Token, Type, string, ClauseParser) ParseTerm(
-        Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    private static (Token, Type, string, ClauseParser) ParseTerm(DslParsingContext context)
     {
-        (Token token, Type type, string errorMessage, ClauseParser parser) = ParseBasicTerm(variables, tokens, dsl);
+        (Token token, Type type, string errorMessage, ClauseParser parser) =
+            ParseBasicTerm(context);
 
         switch (token)
         {
             case KeywordToken keywordToken:
-                dsl.AddKeyword(keywordToken);
+                context.Dsl.AddKeyword(keywordToken);
                 break;
             case OperatorToken operatorToken:
-                dsl.AddOperator(operatorToken);
+                context.Dsl.AddOperator(operatorToken);
                 break;
         }
 
-        return WrapWithRepeatIfNeeded(tokens, token, type, errorMessage, parser);
+        return WrapWithRepeatIfNeeded(context.Tokens, token, type, errorMessage, parser);
     }
 
     /// <summary>
     /// This method is used to create a basic term from our token stream.
     /// </summary>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
+    /// <param name="context">The current parsing context.</param>
     /// <returns>A tuple containing one of a token, a type or a clause parser. For the first
     /// two, an error message may also be provided.</returns>
     private static (Token, Type, string errorMessage, ClauseParser) ParseBasicTerm(
-        Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+        DslParsingContext context)
     {
-        if (BounderToken.OpenBracket.Matches(tokens.FirstOrDefault()))
-            return (null, null, null, CreateSwitchClause(variables, tokens, dsl));
+        if (BounderToken.OpenBracket.Matches(context.Tokens.FirstOrDefault()))
+            return (null, null, null, CreateSwitchClause(context));
 
-        if (BounderToken.OpenBrace.Matches(tokens.FirstOrDefault()))
-            return (null, null, null, CreateSequentialClause(variables, tokens, dsl));
+        if (BounderToken.OpenBrace.Matches(context.Tokens.FirstOrDefault()))
+            return (null, null, null, CreateSequentialClause(context));
 
-        Token token = tokens.RemoveFirst();
+        Token token = context.Tokens.RemoveFirst();
         Type type = null;
         ClauseParser parser = null;
         string text = token.Text;
@@ -735,7 +696,7 @@ public static partial class LexicalDslFactory
         // Handle expression references.
         if (text == "_expression")
         {
-            if (dsl.ExpressionParser == null)
+            if (context.Dsl.ExpressionParser == null)
             {
                 throw new TokenException("The DSL does not contain the specification for an expression.")
                 {
@@ -743,16 +704,16 @@ public static partial class LexicalDslFactory
                 };
             }
 
-            parser = new ExpressionClauseParser(dsl.ExpressionParser);
+            parser = new ExpressionClauseParser(context.Dsl.ExpressionParser);
         }
         // Handle built-in type usage.
         else if (text[0] == '_' && TokenTypesMap.TryGetValue(text, out type))
-            (token, type) = ResolveTypeReference(tokens, text, type);
+            (token, type) = ResolveTypeReference(context.Tokens, text, type);
         else
-            (token, type, parser) = ResolveVariableReference(variables, token, text);
+            (token, type, parser) = ResolveVariableReference(context.Variables, token, text);
 
-        if (OperatorToken.Coalesce.Matches(tokens.FirstOrDefault()))
-            (_, errorMessage) = (tokens.RemoveFirst(), tokens.RemoveFirst().Text);
+        if (OperatorToken.Coalesce.Matches(context.Tokens.FirstOrDefault()))
+            (_, errorMessage) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst().Text);
 
         return (token, type, errorMessage, parser);
     }

@@ -1,12 +1,17 @@
 ## Release Notes
 
+### 1.1.3
+
+- Found a better way to support self- or cross-referencing clauses that doesn't require
+  forward declarations.
+
 ### 1.1.2.1
 
-- Fixed an issue with self-contained or recursive clause definitions to the DSL DSl.
+- Fixed an issue with self- or cross-referencing clause definitions to the DSL DSl.
 
 ### 1.1.2
 
-- Added support for self-contained or recursive clause definitions to the DSL DSl.
+- Added support for self- or cross-referencing clause definitions to the DSL DSl.
 
 ### 1.1.1
 

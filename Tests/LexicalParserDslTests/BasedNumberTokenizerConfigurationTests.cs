@@ -7,9 +7,9 @@ public class BasedNumberTokenizerConfigurationTests : LexicalParserDslTestsBase
 {
     private static readonly List<ErrorEntry> ErrorTests =
     [
-        // new ErrorEntry("based", "Expecting \"numbers\" after \"based\" here."),
-        // new ErrorEntry("based numbers no", "Expecting \"hex\", \"octal\" or \"binary\" after \"no\" here."),
-        // new ErrorEntry("based numbers no or", "Expecting \"hex\", \"octal\" or \"binary\" after \"no\" here."),
+        new ErrorEntry("based", "Expecting \"numbers\" to follow \"based\" here."),
+        new ErrorEntry("based numbers no", "Expecting \"hex\", \"octal\" or \"binary\" to follow \"no\" here."),
+        new ErrorEntry("based numbers no or", "Expecting \"hex\", \"octal\" or \"binary\" to follow \"no\" here."),
         new ErrorEntry("based numbers no hex no hex", "The \"no hex\" clause has already been specified.")
     ];
 
