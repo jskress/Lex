@@ -1,5 +1,9 @@
 ## Release Notes
 
+### 1.1.2.1
+
+- Fixed an issue with self-contained or recursive clause definitions to the DSL DSl.
+
 ### 1.1.2
 
 - Added support for self-contained or recursive clause definitions to the DSL DSl.

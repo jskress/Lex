@@ -149,6 +149,11 @@ public static partial class LexicalDslFactory
         .Then("Expecting a left parenthesis here.", BounderToken.LeftParen)
         .Then("Expecting a string here.", typeof(StringToken))
         .Then("Expecting a right parenthesis here.", BounderToken.RightParen);
+    private static readonly ClauseParser DefineEmptySequentialClauseParser = new SequentialClauseParser()
+        .Matching(typeof(IdToken))
+        .Then(OperatorToken.Colon)
+        .Then(BounderToken.OpenBrace)
+        .Then(BounderToken.CloseBrace);
     private static readonly ClauseParser DefineSequentialClauseParser = new SequentialClauseParser()
         .Matching(typeof(IdToken))
         .Then("Expecting a colon here.", OperatorToken.Colon)
@@ -156,6 +161,11 @@ public static partial class LexicalDslFactory
         .Then(SequentialClauseParser)
         .Then(SetTagClauseParser)
         .Then(RepetitionClauseParser);
+    private static readonly ClauseParser DefineEmptySwitchClauseParser = new SequentialClauseParser()
+        .Matching(typeof(IdToken))
+        .Then(OperatorToken.Colon)
+        .Then(BounderToken.OpenBracket)
+        .Then(BounderToken.CloseBracket);
     private static readonly ClauseParser DefineSwitchClauseParser = new SequentialClauseParser()
         .Matching(typeof(IdToken))
         .Then("Expecting a colon here.", OperatorToken.Colon)
@@ -171,7 +181,9 @@ public static partial class LexicalDslFactory
         .Or(OperatorListClause, nameof(HandleOperatorListClause))
         .Or(ExpressionsClause, nameof(HandleExpressionsClause))
         .Or(DefineTokenClauseParser, nameof(HandleTokenClause))
+        .Or(DefineEmptySequentialClauseParser, nameof(HandleDefineEmptySequentialClause))
         .Or(DefineSequentialClauseParser, nameof(HandleDefineSequentialClause))
+        .Or(DefineEmptySwitchClauseParser, nameof(HandleDefineEmptySwitchClause))
         .Or(DefineSwitchClauseParser, nameof(HandleDefineSwitchClause))
         .Or(SwitchClauseParser, nameof(HandleTopLevelOrClause))
         .OnNoClausesMatched("Unexpected token found.");
@@ -185,7 +197,9 @@ public static partial class LexicalDslFactory
             { nameof(HandleOperatorListClause), HandleOperatorListClause },
             { nameof(HandleExpressionsClause), HandleExpressionsClause },
             { nameof(HandleTokenClause), HandleTokenClause },
+            { nameof(HandleDefineEmptySequentialClause), HandleDefineEmptySequentialClause },
             { nameof(HandleDefineSequentialClause), HandleDefineSequentialClause },
+            { nameof(HandleDefineEmptySwitchClause), HandleDefineEmptySwitchClause },
             { nameof(HandleDefineSwitchClause), HandleDefineSwitchClause },
             { nameof(HandleTopLevelOrClause), HandleTopLevelOrClause }
         };
@@ -407,6 +421,21 @@ public static partial class LexicalDslFactory
     }
 
     /// <summary>
+    /// This method is used to process the definition of an empty and clause.
+    /// </summary>
+    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
+    /// <param name="variables">The set of variables we are using.</param>
+    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
+    /// <param name="dsl">The DSL we are building up</param>
+    private static void HandleDefineEmptySequentialClause(
+        LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    {
+        string variableName = tokens[0].Text;
+
+        variables[variableName] = new SequentialClauseParser();
+    }
+
+    /// <summary>
     /// This method is used to process the definition of an and clause.
     /// </summary>
     /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
@@ -437,6 +466,21 @@ public static partial class LexicalDslFactory
         dsl.AddNamedClauseParser(variableName, clauseParser);
 
         variables[variableName] = clauseParser;
+    }
+
+    /// <summary>
+    /// This method is used to process the definition of an empty or clause.
+    /// </summary>
+    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
+    /// <param name="variables">The set of variables we are using.</param>
+    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
+    /// <param name="dsl">The DSL we are building up</param>
+    private static void HandleDefineEmptySwitchClause(
+        LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    {
+        string variableName = tokens[0].Text;
+
+        variables[variableName] = new SwitchClauseParser();
     }
 
     /// <summary>
