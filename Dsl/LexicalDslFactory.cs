@@ -416,7 +416,8 @@ public static partial class LexicalDslFactory
     private static void HandleDefineSequentialClause(
         LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
     {
-        string variableName = tokens[0].Text;
+        Token nameToken = tokens[0];
+        string variableName = nameToken.Text;
         bool debug = false;
 
         tokens.RemoveRange(0, 2);
@@ -428,7 +429,8 @@ public static partial class LexicalDslFactory
             tokens.RemoveFirst();
         }
 
-        ClauseParser clauseParser = CreateSequentialClause(variables, tokens, dsl).Named(variableName);
+        ClauseParser clauseParser = CreateSequentialClause(variables, tokens, dsl, nameToken)
+            .Named(variableName);
 
         clauseParser.SetDebugging(debug);
 
@@ -447,7 +449,8 @@ public static partial class LexicalDslFactory
     private static void HandleDefineSwitchClause(
         LexicalParser parser, Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
     {
-        string variableName = tokens[0].Text;
+        Token nameToken = tokens[0];
+        string variableName = nameToken.Text;
         bool debug = false;
 
         tokens.RemoveRange(0, 2);
@@ -459,7 +462,8 @@ public static partial class LexicalDslFactory
             tokens.RemoveFirst();
         }
 
-        ClauseParser clauseParser = CreateSwitchClause(variables, tokens, dsl).Named(variableName);
+        ClauseParser clauseParser = CreateSwitchClause(variables, tokens, dsl, nameToken)
+            .Named(variableName);
 
         clauseParser.SetDebugging(debug);
 
@@ -497,11 +501,13 @@ public static partial class LexicalDslFactory
     /// <param name="variables">The set of variables we are using.</param>
     /// <param name="tokens">The list of tokens that make up the clause to process.</param>
     /// <param name="dsl">The DSL we are building up</param>
+    /// <param name="nameToken">A name to use if we need to try to extend an already
+    /// defined sequential clause.</param>
     /// <returns>The configured switch clause.</returns>
     private static ClauseParser CreateSwitchClause(
-        Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+        Dictionary<string, object> variables, List<Token> tokens, Dsl dsl, Token nameToken = null)
     {
-        SwitchClauseParser parser = new ();
+        SwitchClauseParser parser = LookUpOrCreate<SwitchClauseParser>(variables, nameToken);
         bool first = true;
 
         tokens.RemoveFirst();
@@ -557,11 +563,13 @@ public static partial class LexicalDslFactory
     /// <param name="variables">The set of variables we are using.</param>
     /// <param name="tokens">The list of tokens that make up the clause to process.</param>
     /// <param name="dsl">The DSL we are building up</param>
+    /// <param name="nameToken">A name to use if we need to try to extend an already
+    /// defined sequential clause.</param>
     /// <returns>The configured switch clause.</returns>
     private static ClauseParser CreateSequentialClause(
-        Dictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+        Dictionary<string, object> variables, List<Token> tokens, Dsl dsl, Token nameToken = null)
     {
-        SequentialClauseParser parser = new ();
+        SequentialClauseParser parser = LookUpOrCreate<SequentialClauseParser>(variables, nameToken);
         bool first = true;
 
         tokens.RemoveFirst();
@@ -605,6 +613,29 @@ public static partial class LexicalDslFactory
         }
 
         return WrapWithRepeatIfNeeded(tokens, null, null, null, parser).Item4;
+    }
+
+    /// <summary>
+    /// This is a helper method for looking up or creating a clause parser.
+    /// </summary>
+    /// <param name="variables">The set of variables we are using.</param>
+    /// <param name="nameToken">The token holding the name to look for.</param>
+    /// <returns>Either a newly created parser or the one already known by the given name.</returns>
+    private static TParser LookUpOrCreate<TParser>(Dictionary<string, object> variables, Token nameToken)
+        where TParser : ClauseParser, new()
+    {
+        if (nameToken != null && variables.TryGetValue(nameToken.Text, out object value))
+        {
+            if (value is TParser clauseParser)
+                return clauseParser;
+
+            throw new TokenException($"There is already a variable named, {nameToken.Text}, of a different type.")
+            {
+                Token = nameToken
+            };
+        }
+
+        return new TParser();
     }
 
     /// <summary>

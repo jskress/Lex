@@ -14,9 +14,9 @@
         <RepositoryType>git</RepositoryType>
         <PackageLicenseUrl>https://github.com/jskress/Lex/blob/main/LICENSE.md</PackageLicenseUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageReleaseNotes>https://github.com/jskress/Lex/blob/main/docs/release-notes.md</PackageReleaseNotes>
+        <PackageReleaseNotes>Full release notes may be found [here](https://github.com/jskress/Lex/blob/main/docs/release-notes.md).</PackageReleaseNotes>
         <PackageTags>dsl lexical parser tokens clauses expressions</PackageTags>
-        <Version>1.1.1</Version>
+        <Version>1.1.2</Version>
     </PropertyGroup>
 
     <ItemGroup>
