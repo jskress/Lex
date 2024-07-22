@@ -58,10 +58,13 @@ public abstract class ClauseParser
     /// <returns>This object, for fluency.</returns>
     public ClauseParser SetDebugging(bool newState)
     {
-        IsDebugging = newState;
+        if (IsDebugging != newState)
+        {
+            IsDebugging = newState;
 
-        if (this is IClauseParserParent parent)
-            parent.Children.ForEach(child => child.SetDebugging(newState));
+            if (this is IClauseParserParent parent)
+                parent.Children.ForEach(child => child.SetDebugging(newState));
+        }
 
         return this;
     }

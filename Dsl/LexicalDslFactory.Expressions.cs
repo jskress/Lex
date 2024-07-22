@@ -69,29 +69,25 @@ public static partial class LexicalDslFactory
     /// <summary>
     /// This method is used to process the expressions specification clause.
     /// </summary>
-    /// <param name="parser">The parser that is being used to parse the DSL specification.</param>
-    /// <param name="variables">The set of variables we are using.</param>
-    /// <param name="tokens">The list of tokens that make up the clause to process.</param>
-    /// <param name="dsl">The DSL we are building up</param>
-    private static void HandleExpressionsClause(
-        LexicalParser parser, IDictionary<string, object> variables, List<Token> tokens, Dsl dsl)
+    /// <param name="context">The current parsing context.</param>
+    private static void HandleExpressionsClause(DslParsingContext context)
     {
-        if (dsl.ExpressionParser != null)
+        if (context.Dsl.ExpressionParser != null)
         {
             throw new TokenException("An expression specification has already been set.")
             {
-                Token = tokens.First()
+                Token = context.Tokens.First()
             };
         }
 
         ExpressionParser expressionParser = new ExpressionParser();
         bool termWasSpecified = false;
 
-        while (!parser.IsAtEnd() && !parser.IsNext(BounderToken.CloseBrace))
+        while (!context.Parser.IsAtEnd() && !context.Parser.IsNext(BounderToken.CloseBrace))
         {
-            Clause clause = ExpressionSubClause.TryParse(parser);
+            Clause clause = ExpressionSubClause.TryParse(context.Parser);
 
-            ProcessExpressionSubClause(parser, variables, expressionParser, clause.Tag);
+            ProcessExpressionSubClause(context, expressionParser, clause.Tag);
 
             termWasSpecified |= clause.Tag == nameof(ProcessExpressionTermSpec);
         }
@@ -100,47 +96,44 @@ public static partial class LexicalDslFactory
         {
             throw new TokenException("No term clause specified for expressions.")
             {
-                Token = parser.GetNextToken()
+                Token = context.Parser.GetNextToken()
             };
         }
 
-        parser.GetNextToken(); // Eat the close brace.
-
-        dsl.ExpressionParser = expressionParser;
+        context.Parser.GetNextToken(); // Eat the close brace.
+        context.Dsl.ExpressionParser = expressionParser;
     }
 
     /// <summary>
     /// This method handles parsing a term clause for an expression.
     /// </summary>
-    /// <param name="parser">The parser to pull tokens from.</param>
-    /// <param name="variables">The set of variables we are using.</param>
+    /// <param name="context">The current parsing context.</param>
     /// <param name="expressionParser">The expression parser to populate.</param>
     /// <param name="tag">The tag to use in handling list items</param>
     private static void ProcessExpressionSubClause(
-        LexicalParser parser, IDictionary<string, object> variables, ExpressionParser expressionParser,
-        string tag)
+        DslParsingContext context, ExpressionParser expressionParser, string tag)
     {
-        Token token = parser.GetRequiredToken(
+        Token token = context.Parser.GetRequiredToken(
             () => $"Expecting a {TermTagNouns[tag]} spec or close bracket here.");
         Action<IDictionary<string, object>, ExpressionParser, List<Token>> processor =
             ExpressionSpecProcessors[tag];
 
-        parser.ReturnToken(token);
+        context.Parser.ReturnToken(token);
 
         while (!BounderToken.CloseBracket.Matches(token))
         {
             List<Token> tokens = ParseUntil(
-                parser, OperatorToken.Comma, BounderToken.CloseBracket);
+                context.Parser, OperatorToken.Comma, BounderToken.CloseBracket);
 
             if (tokens.Count == 0)
             {
                 throw new TokenException($"Expecting a {TermTagNouns[tag]} spec here.")
                 {
-                    Token = parser.PeekNextToken()
+                    Token = context.Parser.PeekNextToken()
                 };
             }
 
-            processor.Invoke(variables, expressionParser, tokens);
+            processor(context.Variables, expressionParser, tokens);
 
             if (tokens.Count > 0)
             {
@@ -150,7 +143,7 @@ public static partial class LexicalDslFactory
                 };
             }
 
-            token = parser.MatchToken(
+            token = context.Parser.MatchToken(
                 true, () => "Expecting a comma or close bracket here.",
                 OperatorToken.Comma, BounderToken.CloseBracket);
         }
