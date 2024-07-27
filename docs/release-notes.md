@@ -1,5 +1,10 @@
 ## Release Notes
 
+### 1.1.3.4
+
+- Fixed an issue with parsing expression terms that contain nested expressions.  Yes, it
+  includes a new test.
+
 ### 1.1.3.3
 
 - Fixed an issue with parsing expressions through clauses.  A new test was added to make
