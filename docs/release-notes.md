@@ -1,5 +1,9 @@
 ## Release Notes
 
+### 1.1.3.2
+
+- Fixed an issue with expression clause parsers not being properly created.
+
 ### 1.1.3.1
 
 - Fixed an issue with using multiple types of string tokenizers in the parser DSL.
