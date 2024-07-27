@@ -111,4 +111,14 @@ public class StringTokenizerConfigurationTests : LexicalParserDslTestsBase
     {
         RunErrorTests(ErrorTests);
     }
+
+    [TestMethod]
+    public void TestMultipleStringTokenizerTypes()
+    {
+        LexicalParserFactory.CreateFrom("""
+            single quoted strings multiChar
+            double quoted strings
+            triple quoted strings
+            """);
+    }
 }

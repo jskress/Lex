@@ -1,4 +1,5 @@
 using Lex.Clauses;
+using Lex.Dsl;
 using Lex.Parser;
 using Lex.Tokenizers;
 
@@ -107,5 +108,40 @@ public class RepeatingClauseTests : ClauseTestsBase
         AssertTokenException(
             () => Verify(parser, "this thing", clauseParser, This, null),
             "Not enough repeats");
+    }
+
+    [TestMethod]
+    public void TestDslParsing()
+    {
+        VerifyRange("?", 0, 1);
+        VerifyRange("+", 1, null);
+        VerifyRange("*", 0, null);
+        VerifyRange("..5", 0, 5);
+        VerifyRange("2..", 2, null);
+        VerifyRange("1..5", 1, 5);
+        VerifyRange("5", 5, 5);
+    }
+
+    /// <summary>
+    /// This is a helper method for verifying DSL parsing of ranges.
+    /// </summary>
+    /// <param name="spec">The DSL spec to parse.</param>
+    /// <param name="minimum">The expected minimum.</param>
+    /// <param name="maximum">The expected maximum</param>
+    private static void VerifyRange(string spec, int minimum, int? maximum)
+    {
+        Dsl dsl = LexicalDslFactory.CreateFrom($$"""
+            _keywords: 'word'
+            clause: { word { {{spec}} } }
+            """);
+        Dictionary<string, ClauseParser> clauses = dsl.GetClauses();
+        SequentialClauseParser sequentialClauseParser =
+            (SequentialClauseParser) clauses["clause"];
+        RepeatingClauseParser repeatingClauseParser =
+            (RepeatingClauseParser) sequentialClauseParser.Children[0];
+        (int min, int? max) = repeatingClauseParser.GetMinMax();
+
+        Assert.AreEqual(minimum, min);
+        Assert.AreEqual(maximum, max);
     }
 }
