@@ -111,6 +111,7 @@ public static partial class LexicalDslFactory
                 .Or(OperatorToken.Multiply)
                 .Or(OperatorToken.If)
                 .Or(RangeClauseParser)
+                .Or(typeof(NumberToken))
                 .OnNoClausesMatched("Expecting a range specification here."))
             .Then(ErrorMessageClauseParser)
             .Then("Expecting a closing brace here.", BounderToken.CloseBrace)
@@ -812,7 +813,7 @@ public static partial class LexicalDslFactory
         RepeatingClauseParser repeatingClauseParser;
         string repeatingErrorMessage = null;
         int min = 0;
-        int max = int.MaxValue;
+        int? max = null;
         bool removeSingleSymbol = true;
 
         if (OperatorToken.If.Matches(next))
@@ -868,11 +869,11 @@ public static partial class LexicalDslFactory
     /// <param name="defaultMin">The default value for the minimum.</param>
     /// <param name="defaultMax">The default value for the maximum.</param>
     /// <returns>A tuple containing the min and max represented by the token list.</returns>
-    private static (int, int) ParseMinMax(List<Token> tokens, int defaultMin = 0, int defaultMax = int.MaxValue)
+    private static (int, int?) ParseMinMax(List<Token> tokens, int defaultMin = 0, int? defaultMax = null)
     {
         Token next = tokens.FirstOrDefault();
         int min = defaultMin;
-        int max = defaultMax;
+        int? max = defaultMax;
         
         Token errorToken = next;
 

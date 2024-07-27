@@ -242,7 +242,7 @@ public static partial class LexicalDslFactory
 
         ExpressionPossibilitySet separators = null;
         int min = 1;
-        int max = 1;
+        int? max = 1;
 
         if (BounderToken.LeftParen.Matches(tokens.FirstOrDefault()))
         {
@@ -264,7 +264,8 @@ public static partial class LexicalDslFactory
             tokens.RemoveFirst(); // Eat the right parenthesis.
         }
 
-        termChoiceParser.ExpectingExpression(new ExpressionTermChoiceItem(min, max, separators));
+        termChoiceParser.ExpectingExpression(
+            new ExpressionTermChoiceItem(min, max ?? int.MaxValue, separators));
     }
 
     /// <summary>
@@ -273,11 +274,11 @@ public static partial class LexicalDslFactory
     /// </summary>
     /// <param name="tokens">The list of tokens to process.</param>
     /// <returns>A tuple containg<c>true</c>, if separators should be expected, or <c>false</c>, if not.</returns>
-    private static (int, int) ProcessExpressionCountNotation(List<Token> tokens)
+    private static (int, int?) ProcessExpressionCountNotation(List<Token> tokens)
     {
         Token token = tokens.FirstOrDefault();
         int min = 1;
-        int max = 1;
+        int? max = 1;
 
         if (!BounderToken.RightParen.Matches(token))
         {

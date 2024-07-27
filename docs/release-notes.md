@@ -1,5 +1,10 @@
 ## Release Notes
 
+### 1.1.3.1
+
+- Fixed an issue with using multiple types of string tokenizers in the parser DSL.
+- Fixed an issue where a simple number was not allowed in a repeat clause.
+
 ### 1.1.3
 
 - Found a better way to support self- or cross-referencing clauses that doesn't require

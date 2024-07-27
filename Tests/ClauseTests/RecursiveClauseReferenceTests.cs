@@ -14,9 +14,7 @@ public class RecursiveClauseReferenceTests
             childClause: { parentClause }
             parentClause: { childClause }
             """);
-        FieldInfo info = dsl.GetType().GetField(
-            "_clauses", BindingFlags.NonPublic | BindingFlags.Instance);
-        Dictionary<string, ClauseParser> clauses = (Dictionary<string, ClauseParser>) info!.GetValue(dsl);
+        Dictionary<string, ClauseParser> clauses = dsl.GetClauses();
 
         Assert.IsNotNull(clauses);
         Assert.AreEqual(2, clauses.Count);

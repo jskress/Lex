@@ -20,7 +20,16 @@ public static partial class LexicalParserFactory
     private static Tokenizer HandleStringsClause(
         List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
     {
-        EnsureFirstTime(typeof(StringTokenizer), usedTypes, tokens);
+        string text = tokens.GetTokenText();
+        Type type = text switch
+        {
+            "single" => typeof(SingleQuotedStringTokenizer),
+            "double" => typeof(DoubleQuotedStringTokenizer),
+            "triple" => typeof(TripleQuotedStringTokenizer),
+            _ => typeof(StringTokenizer)
+        };
+
+        EnsureFirstTime(type, usedTypes, tokens);
 
         StringTokenizer tokenizer;
         int count = 3;

@@ -1,4 +1,6 @@
 using System.Reflection;
+using Lex.Clauses;
+using Lex.Dsl;
 using Lex.Parser;
 using Lex.Tokenizers;
 
@@ -22,5 +24,35 @@ public static class ReflectionExtensions
             "_tokenizers", BindingFlags.NonPublic | BindingFlags.Instance);
 
         return (List<Tokenizer>) fieldInfo?.GetValue(parser);
+    }
+
+    /// <summary>
+    /// This is a helper method for returning a reference to a DSL's clause dictionary.
+    /// </summary>
+    /// <param name="dsl">The DSL to get the clause dictionary from.</param>
+    /// <returns>The DSL's clause dictionary.</returns>
+    public static Dictionary<string, ClauseParser> GetClauses(this Dsl dsl)
+    {
+        FieldInfo fieldInfo = dsl.GetType().GetField(
+            "_clauses", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        return (Dictionary<string, ClauseParser>) fieldInfo?.GetValue(dsl);
+    }
+
+    /// <summary>
+    /// This is a helper method for returning the nim and max values for a repeating clause
+    /// parser.
+    /// </summary>
+    /// <param name="clauseParser">The clause parser to get the min/max values from.</param>
+    /// <returns>A tuple containing the min and max values we found.</returns>
+    public static (int, int?) GetMinMax(this RepeatingClauseParser clauseParser)
+    {
+        FieldInfo minFieldInfo = clauseParser.GetType().GetField(
+            "_min", BindingFlags.NonPublic | BindingFlags.Instance);
+        FieldInfo maxFieldInfo = clauseParser.GetType().GetField(
+            "_max", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        return ((int) minFieldInfo!.GetValue(clauseParser)!,
+                (int?) maxFieldInfo?.GetValue(clauseParser));
     }
 }
