@@ -455,7 +455,7 @@ public class ExpressionTests
     }
 
     [TestMethod]
-    public void TestDslUsage()
+    public void TestDslSimpleExpressionUsage()
     {
         Dsl dsl = LexicalDslFactory.CreateFrom(""""
             _parserSpec: """
@@ -484,5 +484,40 @@ public class ExpressionTests
         Assert.IsNotNull(term);
         Assert.AreEqual(1, term.Tokens.Count);
         Assert.AreEqual("('is a test')", term.Text);
+    }
+
+    [TestMethod]
+    public void TestDslNestedExpressionUsage()
+    {
+        Dsl dsl = LexicalDslFactory.CreateFrom(""""
+            _parserSpec: """
+                dsl operators
+                numbers
+                bounders
+                whitespace
+                """
+            _operators: comma
+            _expressions:{
+                term: [
+                    openBracket _expression(3..4, comma) /closeBracket => 'tuple', 
+                    _number => 'number'
+                ]
+            }
+            clause: { _expression } 
+            """");
+        using LexicalParser parser = dsl.CreateLexicalParser();
+
+        parser.SetSource("[0, 1.5, 5]".AsReader());
+
+        Clause clause = dsl.ParseClause(parser, "clause");
+        
+        Assert.AreEqual(0, clause.Tokens.Count);
+        Assert.AreEqual(1, clause.Expressions.Count);
+
+        DefaultExpressionTerm term = clause.Expressions[0] as DefaultExpressionTerm;
+        
+        Assert.IsNotNull(term);
+        Assert.AreEqual(1, term.Tokens.Count);
+        Assert.AreEqual("([(0 => number), (1.5 => number), (5 => number) => tuple)", term.Text);
     }
 }

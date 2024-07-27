@@ -350,7 +350,7 @@ public class ExpressionParser
     }
 
     /// <summary>
-    /// This is a helper method for gathering up a list of unary operators.
+    /// This is a helper method for gathering a list of unary operators.
     /// </summary>
     /// <param name="parser">The parser to read from.</param>
     /// <param name="set">The unary operator collection to use.</param>
@@ -421,19 +421,21 @@ public class ExpressionParser
     private IExpressionTerm ParseFundamentalTerm(LexicalParser parser, bool optional)
     {
         Token token = parser.PeekNextToken();
-        IExpressionTerm term = _termChoiceParsers
-            .Select(termChoice => termChoice.TryParse(this, parser))
-            .FirstOrDefault(t => t != null);
 
-        if (term == null && !optional)
+        foreach (var term in _termChoiceParsers
+                     .Select(termChoiceParser => termChoiceParser.TryParse(this, parser))
+                     .Where(term => term != null))
         {
-            throw new TokenException(ResolveMessage(ExpressionParseMessageTypes.MissingRequiredTerm))
-            {
-                Token = token
-            };
+            return term;
         }
 
-        return term;
+        if (optional)
+            return null;
+
+        throw new TokenException(ResolveMessage(ExpressionParseMessageTypes.MissingRequiredTerm))
+        {
+            Token = token
+        };
     }
 
     /// <summary>
