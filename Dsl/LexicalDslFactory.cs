@@ -706,6 +706,7 @@ public static partial class LexicalDslFactory
             }
 
             parser = new ExpressionClauseParser(context.Dsl.ExpressionParser);
+            token = null;
         }
         // Handle built-in type usage.
         else if (text[0] == '_' && TokenTypesMap.TryGetValue(text, out type))
