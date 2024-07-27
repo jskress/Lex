@@ -1,5 +1,10 @@
 ## Release Notes
 
+### 1.1.3.3
+
+- Fixed an issue with parsing expressions through clauses.  A new test was added to make
+  sure things work right.
+
 ### 1.1.3.2
 
 - Fixed an issue with expression clause parsers not being properly created.
