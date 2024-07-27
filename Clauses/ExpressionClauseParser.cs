@@ -45,6 +45,7 @@ public class ExpressionClauseParser : ClauseParser
 
         return new Clause
         {
+            Tokens = [],
             Expressions = [expression]
         };
     }

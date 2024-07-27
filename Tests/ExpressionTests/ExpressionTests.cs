@@ -1,4 +1,5 @@
 using Lex;
+using Lex.Clauses;
 using Lex.Dsl;
 using Lex.Expressions;
 using Lex.Parser;
@@ -451,5 +452,37 @@ public class ExpressionTests
         parser.SetSource(source.AsReader());
 
         return (DefaultExpressionTerm) dsl.ParseExpression(parser);
+    }
+
+    [TestMethod]
+    public void TestDslUsage()
+    {
+        Dsl dsl = LexicalDslFactory.CreateFrom(""""
+            _parserSpec: """
+                dsl keywords
+                single quoted strings multiChar
+                whitespace
+                """
+            _keywords: 'this'
+            _expressions:{
+                term: [ _string ]
+            }
+            clause: { this > _expression } 
+            """");
+        using LexicalParser parser = dsl.CreateLexicalParser();
+
+        parser.SetSource("this 'is a test'".AsReader());
+
+        Clause clause = dsl.ParseClause(parser, "clause");
+        
+        Assert.AreEqual(1, clause.Tokens.Count);
+        Assert.IsTrue(new KeywordToken("this").Matches(clause.Tokens[0]));
+        Assert.AreEqual(1, clause.Expressions.Count);
+
+        DefaultExpressionTerm term = clause.Expressions[0] as DefaultExpressionTerm;
+        
+        Assert.IsNotNull(term);
+        Assert.AreEqual(1, term.Tokens.Count);
+        Assert.AreEqual("('is a test')", term.Text);
     }
 }
