@@ -1,21 +1,15 @@
 ## Release Notes
 
-### 1.1.3.4
+### 1.1.4
 
+- Fixed two issues with switch clause tagging.
 - Fixed an issue with parsing expression terms that contain nested expressions.  Yes, it
   includes a new test.
-
-### 1.1.3.3
-
+- Fixed an issue with parsing expression terms that contain nested expressions.  Yes, it
+  includes a new test.
 - Fixed an issue with parsing expressions through clauses.  A new test was added to make
   sure things work right.
-
-### 1.1.3.2
-
 - Fixed an issue with expression clause parsers not being properly created.
-
-### 1.1.3.1
-
 - Fixed an issue with using multiple types of string tokenizers in the parser DSL.
 - Fixed an issue where a simple number was not allowed in a repeat clause.
 

@@ -507,6 +507,11 @@ public static partial class LexicalDslFactory
         // need to be a repeat clause.
         index = Math.Min(index + 1, tokens.Count);
 
+        if (index < tokens.Count - 1 &&
+            OperatorToken.Coalesce.Matches(tokens[index]) &&
+            tokens[index + 1] is StringToken)
+            index += 2;
+
         return (tokens[..index], tokens[index..]);
     }
 
@@ -557,16 +562,16 @@ public static partial class LexicalDslFactory
             if (token != null)
             {
                 if (first)
-                    parser.Matching(errorMessage, tag, token);
+                    parser.Matching(tag, errorMessage, token);
                 else
-                    parser.Or(errorMessage, tag, token);
+                    parser.Or(tag, errorMessage, token);
             }
             else if (type != null)
             {
                 if (first)
-                    parser.Matching(errorMessage, tag, type);
+                    parser.Matching(tag, errorMessage, type);
                 else
-                    parser.Or(errorMessage, tag, type);
+                    parser.Or(tag, errorMessage, type);
             }
             else
             {
