@@ -18,11 +18,11 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleBoundersClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(BounderTokenizer), usedTypes, tokens);
 
-        string text = tokens.GetTokenText(1) == "of" ? tokens[2].Text : null;
+        string? text = tokens.GetTokenText(1) == "of" ? tokens[2].Text : null;
 
         tokens.RemoveRange(0, text != null ? 3 : 1);
 

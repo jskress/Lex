@@ -216,7 +216,11 @@ public static partial class LexicalDslFactory
         };
 
         while (!parser.IsAtEnd())
-            ProcessNextClause(context, OurDsl.ParseNextClause(parser));
+        {
+            // The top-level clause always either matches or throws (it carries an
+            // "on no clauses matched" error message), so this is never null.
+            ProcessNextClause(context, OurDsl.ParseNextClause(parser)!);
+        }
 
         FillInClauses(context);
 
@@ -280,7 +284,9 @@ public static partial class LexicalDslFactory
     /// <param name="clause">The result of parsing the next clause.</param>
     private static void ProcessNextClause(DslParsingContext context, Clause clause)
     {
-        if (TagHandlers.TryGetValue(clause.Tag, out Action<DslParsingContext> handler))
+        // Every alternative in the top-level clause carries an explicit tag, so a
+        // successfully parsed clause is always tagged.
+        if (TagHandlers.TryGetValue(clause.Tag!, out Action<DslParsingContext>? handler))
         {
             context.Tokens = [..clause.Tokens];
 
@@ -359,12 +365,12 @@ public static partial class LexicalDslFactory
                     context.Dsl.AddOperator(pair.Value);
                 }
             }
-            else if (OperatorToken.NamedOperators.TryGetValue(lowered, out OperatorToken token))
+            else if (OperatorToken.NamedOperators.TryGetValue(lowered, out OperatorToken? token))
             {
                 context.Variables[text] = token;
                 context.Dsl.AddOperator(token);
             }
-            else if (context.Variables.TryGetValue(text, out object value) &&
+            else if (context.Variables.TryGetValue(text, out object? value) &&
                      value is OperatorToken operatorToken)
                 context.Dsl.AddOperator(operatorToken);
         }
@@ -462,8 +468,11 @@ public static partial class LexicalDslFactory
 
         TParser clauseParser = new TParser();
         (List<Token> clauseTokens, List<Token> repeatTokens) = IsolateRepeatClauseTokens(tokens);
-        (_, _, _, ClauseParser storedParser) = WrapWithRepeatIfNeeded(
+        (_, _, _, ClauseParser? wrapped) = WrapWithRepeatIfNeeded(
             repeatTokens, null, null, null, clauseParser);
+        // The clauseParser argument passed to WrapWithRepeatIfNeeded is never null, so
+        // neither is the clause parser it returns.
+        ClauseParser storedParser = wrapped!;
 
         storedParser.Named(variableName);
 
@@ -542,7 +551,7 @@ public static partial class LexicalDslFactory
     /// <param name="parser">The parser to fill in, if it already exists.</param>
     /// <returns>The configured switch clause.</returns>
     private static ClauseParser CreateSwitchClause(
-        DslParsingContext context, SwitchClauseParser parser = null)
+        DslParsingContext context, SwitchClauseParser? parser = null)
     {
         bool first = true;
 
@@ -552,12 +561,12 @@ public static partial class LexicalDslFactory
 
         do
         {
-            (Token token, Type type, string errorMessage, ClauseParser clauseParser) =
+            (Token? token, Type? type, string? errorMessage, ClauseParser? clauseParser) =
                 ParseTerm(context);
-            string tag = null;
+            string? tag = null;
 
             if (OperatorToken.DoubleArrow.Matches(context.Tokens.FirstOrDefault()))
-                (_, tag) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst().Text);
+                (_, tag) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst()!.Text);
 
             if (token != null)
             {
@@ -575,10 +584,12 @@ public static partial class LexicalDslFactory
             }
             else
             {
+                // ParseTerm() always resolves to a token, a type or a clause parser, so
+                // clauseParser is never null here.
                 if (first)
-                    parser.Matching(clauseParser, tag);
+                    parser.Matching(clauseParser!, tag);
                 else
-                    parser.Or(clauseParser, tag);
+                    parser.Or(clauseParser!, tag);
             }
 
             first = false;
@@ -588,12 +599,14 @@ public static partial class LexicalDslFactory
         // If we're here, we've just eaten the closing bracket, so check for an error message.
         if (OperatorToken.Coalesce.Matches(context.Tokens.FirstOrDefault()))
         {
-            (_, string onNoMatch) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst().Text);
+            (_, string onNoMatch) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst()!.Text);
 
             parser.OnNoClausesMatched(onNoMatch);
         }
 
-        return WrapWithRepeatIfNeeded(context.Tokens, null, null, null, parser).Item4;
+        // The parser argument passed to WrapWithRepeatIfNeeded is never null, so neither is
+        // the clause parser it returns.
+        return WrapWithRepeatIfNeeded(context.Tokens, null, null, null, parser).Item4!;
     }
 
     /// <summary>
@@ -603,7 +616,7 @@ public static partial class LexicalDslFactory
     /// <param name="parser">The parser to fill in, if it already exists.</param>
     /// <returns>The configured sequential clause.</returns>
     private static ClauseParser CreateSequentialClause(
-        DslParsingContext context, SequentialClauseParser parser = null)
+        DslParsingContext context, SequentialClauseParser? parser = null)
     {
         bool first = true;
 
@@ -613,7 +626,7 @@ public static partial class LexicalDslFactory
 
         do
         {
-            (Token token, Type type, string errorMessage, ClauseParser clauseParser) =
+            (Token? token, Type? type, string? errorMessage, ClauseParser? clauseParser) =
                 ParseTerm(context);
 
             if (token != null)
@@ -632,10 +645,12 @@ public static partial class LexicalDslFactory
             }
             else
             {
+                // ParseTerm() always resolves to a token, a type or a clause parser, so
+                // clauseParser is never null here.
                 if (first)
-                    parser.Matching(clauseParser);
+                    parser.Matching(clauseParser!);
                 else
-                    parser.Then(clauseParser);
+                    parser.Then(clauseParser!);
             }
 
             first = false;
@@ -645,12 +660,14 @@ public static partial class LexicalDslFactory
         // If we're here, we've just eaten the closing brace, so check for a tag.
         if (OperatorToken.DoubleArrow.Matches(context.Tokens.FirstOrDefault()))
         {
-            (_, string tag) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst().Text);
+            (_, string tag) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst()!.Text);
 
             parser.OnMatchTag(tag);
         }
 
-        return WrapWithRepeatIfNeeded(context.Tokens, null, null, null, parser).Item4;
+        // The parser argument passed to WrapWithRepeatIfNeeded is never null, so neither is
+        // the clause parser it returns.
+        return WrapWithRepeatIfNeeded(context.Tokens, null, null, null, parser).Item4!;
     }
 
     /// <summary>
@@ -660,9 +677,9 @@ public static partial class LexicalDslFactory
     /// <param name="context">The current parsing context.</param>
     /// <returns>A tuple containing one of a token, a type or a clause parser. For the first
     /// two, an error message may also be provided.</returns>
-    private static (Token, Type, string, ClauseParser) ParseTerm(DslParsingContext context)
+    private static (Token?, Type?, string?, ClauseParser?) ParseTerm(DslParsingContext context)
     {
-        (Token token, Type type, string errorMessage, ClauseParser parser) =
+        (Token? token, Type? type, string? errorMessage, ClauseParser? parser) =
             ParseBasicTerm(context);
 
         switch (token)
@@ -684,7 +701,7 @@ public static partial class LexicalDslFactory
     /// <param name="context">The current parsing context.</param>
     /// <returns>A tuple containing one of a token, a type or a clause parser. For the first
     /// two, an error message may also be provided.</returns>
-    private static (Token, Type, string errorMessage, ClauseParser) ParseBasicTerm(
+    private static (Token?, Type?, string? errorMessage, ClauseParser?) ParseBasicTerm(
         DslParsingContext context)
     {
         if (BounderToken.OpenBracket.Matches(context.Tokens.FirstOrDefault()))
@@ -693,11 +710,12 @@ public static partial class LexicalDslFactory
         if (BounderToken.OpenBrace.Matches(context.Tokens.FirstOrDefault()))
             return (null, null, null, CreateSequentialClause(context));
 
-        Token token = context.Tokens.RemoveFirst();
-        Type type = null;
-        ClauseParser parser = null;
+        // The two Matches() calls above confirm there's a next token.
+        Token? token = context.Tokens.RemoveFirst()!;
+        Type? type = null;
+        ClauseParser? parser = null;
         string text = token.Text;
-        string errorMessage = null;
+        string? errorMessage = null;
 
         // Handle expression references.
         if (text == "_expression")
@@ -720,7 +738,7 @@ public static partial class LexicalDslFactory
             (token, type, parser) = ResolveVariableReference(context.Variables, token, text);
 
         if (OperatorToken.Coalesce.Matches(context.Tokens.FirstOrDefault()))
-            (_, errorMessage) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst().Text);
+            (_, errorMessage) = (context.Tokens.RemoveFirst(), context.Tokens.RemoveFirst()!.Text);
 
         return (token, type, errorMessage, parser);
     }
@@ -733,15 +751,16 @@ public static partial class LexicalDslFactory
     /// <param name="text">The text of the token that represents the desired type.</param>
     /// <param name="type">The C# type we're dealing with.</param>
     /// <returns>A tuple containing the resolved token or type.</returns>
-    private static (Token, Type) ResolveTypeReference(List<Token> tokens, string text, Type type)
+    private static (Token?, Type?) ResolveTypeReference(List<Token> tokens, string text, Type? type)
     {
-        Token token = tokens.FirstOrDefault();
+        Token? token = tokens.FirstOrDefault();
 
         // Do we need to create a token to match against?
         if (BounderToken.LeftParen.Matches(token))
         {
+            // The token clause grammar guarantees a string token here.
             (_, StringToken value, _) = (
-                tokens.RemoveFirst(), tokens.RemoveFirst() as StringToken, tokens.RemoveFirst());
+                tokens.RemoveFirst(), (tokens.RemoveFirst() as StringToken)!, tokens.RemoveFirst());
 
             token = CreateToken(text, value);
             type = null;
@@ -761,13 +780,13 @@ public static partial class LexicalDslFactory
     /// <param name="text">The actual name of the variable.</param>
     /// <returns>A tuple that contains the token, type or clause parser, that the variable
     /// name points to.</returns>
-    private static (Token, Type, ClauseParser) ResolveVariableReference(
-        IDictionary<string, object> variables, Token token, string text)
+    private static (Token?, Type?, ClauseParser?) ResolveVariableReference(
+        IDictionary<string, object> variables, Token? token, string text)
     {
-        Type type = null;
-        ClauseParser parser = null;
+        Type? type = null;
+        ClauseParser? parser = null;
 
-        if (!variables.TryGetValue(text, out object value))
+        if (!variables.TryGetValue(text, out object? value))
         {
             throw new TokenException($"There is no variable defined with the name, '{text}'.")
             {
@@ -804,10 +823,10 @@ public static partial class LexicalDslFactory
     /// <param name="errorMessage">The error message to go with the token or type.</param>
     /// <param name="parser">The clause parser, if the term is a parser.</param>
     /// <returns>A tuple containing details about the (potentially) wrapped term.</returns>
-    private static (Token, Type, string, ClauseParser) WrapWithRepeatIfNeeded(
-        List<Token> tokens, Token token, Type type, string errorMessage, ClauseParser parser)
+    private static (Token?, Type?, string?, ClauseParser?) WrapWithRepeatIfNeeded(
+        List<Token> tokens, Token? token, Type? type, string? errorMessage, ClauseParser? parser)
     {
-        Token next = tokens.FirstOrDefault();
+        Token? next = tokens.FirstOrDefault();
 
         if (!BounderToken.OpenBrace.Matches(next))
             return (token, type, errorMessage, parser);
@@ -817,7 +836,7 @@ public static partial class LexicalDslFactory
         next = tokens.FirstOrDefault();
 
         RepeatingClauseParser repeatingClauseParser;
-        string repeatingErrorMessage = null;
+        string? repeatingErrorMessage = null;
         int min = 0;
         int? max = null;
         bool removeSingleSymbol = true;
@@ -836,7 +855,7 @@ public static partial class LexicalDslFactory
             tokens.RemoveFirst();
 
         if (OperatorToken.Coalesce.Matches(tokens.FirstOrDefault()))
-            (_, repeatingErrorMessage) = (tokens.RemoveFirst(), tokens.RemoveFirst().Text);
+            (_, repeatingErrorMessage) = (tokens.RemoveFirst(), tokens.RemoveFirst()!.Text);
 
         if (token != null)
         {
@@ -849,7 +868,11 @@ public static partial class LexicalDslFactory
                 new SingleTokenClauseParser(errorMessage: errorMessage, type), min, max, errorMessage);
         }
         else
-            repeatingClauseParser = new RepeatingClauseParser(parser, min, max, repeatingErrorMessage);
+        {
+            // token, type and parser can't all be null; ParseBasicTerm() always resolves to
+            // one of the three.
+            repeatingClauseParser = new RepeatingClauseParser(parser!, min, max, repeatingErrorMessage);
+        }
 
         next = tokens.FirstOrDefault();
 
@@ -877,11 +900,11 @@ public static partial class LexicalDslFactory
     /// <returns>A tuple containing the min and max represented by the token list.</returns>
     private static (int, int?) ParseMinMax(List<Token> tokens, int defaultMin = 0, int? defaultMax = null)
     {
-        Token next = tokens.FirstOrDefault();
+        Token? next = tokens.FirstOrDefault();
         int min = defaultMin;
         int? max = defaultMax;
-        
-        Token errorToken = next;
+
+        Token? errorToken = next;
 
         if (next is NumberToken ninNumberToken)
         {

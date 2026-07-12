@@ -18,7 +18,7 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleSourcedKeywordsClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(KeywordTokenizer), usedTypes, tokens);
 
@@ -37,7 +37,7 @@ public static partial class LexicalParserFactory
 
         if (tokens.Count > 0 && IncludeExcludeOptions.Contains(tokens[0].Text))
         {
-            string option = tokens.RemoveFirst().Text;
+            string option = tokens.RemoveFirst()!.Text;
             HashSet<string> strings = GetKeywordList(tokens);
 
             if (option == "including")
@@ -60,7 +60,7 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleKeywordsClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(KeywordTokenizer), usedTypes, tokens);
 

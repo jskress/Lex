@@ -1,3 +1,5 @@
+using Lex.Tokens;
+
 namespace Lex.Expressions;
 
 /// <summary>
@@ -8,12 +10,19 @@ public class DefaultUnaryOperation : DefaultExpressionTerm
     /// <summary>
     /// This property holds the argument term for the unary operation.
     /// </summary>
-    public DefaultExpressionTerm Term { get; internal init; }
+    public DefaultExpressionTerm Term { get; }
 
     /// <summary>
     /// This property holds the flag that notes whether the operation is prefix or postfix.
     /// </summary>
-    public bool IsPrefix { get; internal init; }
+    public bool IsPrefix { get; }
+
+    internal DefaultUnaryOperation(IReadOnlyList<Token> tokens, DefaultExpressionTerm term, bool isPrefix)
+        : base(tokens)
+    {
+        Term = term;
+        IsPrefix = isPrefix;
+    }
 
     /// <summary>
     /// This method produces a text representation of this term.

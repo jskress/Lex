@@ -1,0 +1,6 @@
+railroad-ebnf-beta
+title "Defining binary operations"
+
+binaryTerm = identifier { identifier } [ ":" ( number | precedenceName ) ] ;
+precedenceName = "coalesce" | "boolean" | "equality" | "comparison"
+                | "shift" | "additive" | "multiplicative" ;

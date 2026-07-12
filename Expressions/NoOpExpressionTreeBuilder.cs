@@ -17,7 +17,7 @@ public class NoOpExpressionTreeBuilder : IExpressionTreeBuilder
     /// <param name="expressions">The list of any sub-expression objects.</param>
     /// <param name="tag">The tag that goes with the type of term parsed.</param>
     /// <returns>Our no-op term, always.</returns>
-    public IExpressionTerm CreateTerm(List<Token> tokens, List<IExpressionTerm> expressions, string tag)
+    public IExpressionTerm CreateTerm(List<Token> tokens, List<IExpressionTerm> expressions, string? tag)
     {
         return NoOpTerm.Instance;
     }

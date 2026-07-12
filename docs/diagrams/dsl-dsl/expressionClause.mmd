@@ -1,0 +1,9 @@
+railroad-ebnf-beta
+title "Defining the form of an expression"
+
+expressionClause = "_expressions" ":" "{" { termSpec | unarySpec | binarySpec | trinarySpec | messagesSpec } "}" ;
+termSpec = "term" ":" "[" [ expressionTerm { "," expressionTerm } ] "]" ;
+unarySpec = "unary" ":" "[" [ unaryTerm { "," unaryTerm } ] "]" ;
+binarySpec = "binary" ":" "[" [ binaryTerm { "," binaryTerm } ] "]" ;
+trinarySpec = "trinary" ":" "[" [ trinaryTerm { "," trinaryTerm } ] "]" ;
+messagesSpec = "messages" ":" "[" [ messages { "," messages } ] "]" ;

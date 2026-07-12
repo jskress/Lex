@@ -1,0 +1,10 @@
+railroad-ebnf-beta
+title "Defining an expression term"
+
+expressionTerm = piece { piece } [ "=>" string ] ;
+piece = [ "/" ] ( tokenType [ "(" string ")" ] | expressionRef | identifier ) ;
+expressionRef = "_expression" [ "(" countNotation [ "," identifier { identifier } ] ")" ] ;
+countNotation = "*" | "+" | "?" | rangeClause | number ;
+rangeClause = [ number ] ".." [ number ] ;
+tokenType = "_bounder" | "_comment" | "_identifier" | "_keyword"
+          | "_number" | "_operator" | "_string" | "_whitespace" ;

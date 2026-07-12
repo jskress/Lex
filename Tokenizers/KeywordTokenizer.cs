@@ -39,7 +39,7 @@ public class KeywordTokenizer : FixedListTokenizer
     }
 
     private LetterCaseStyle _style;
-    private string[] _styledPossibilities;
+    private string[]? _styledPossibilities;
 
     public KeywordTokenizer(LexicalParser parser, HashSet<string> keywords)
         : base(parser, keywords, "a keyword")

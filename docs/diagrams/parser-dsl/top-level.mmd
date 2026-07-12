@@ -1,0 +1,15 @@
+railroad-ebnf-beta
+title "Top level parser factory DSL"
+
+top-level = { whitespaceClause
+            | basedNumbersClause
+            | boundersClause
+            | sourcedOperatorsClause
+            | operatorsClause
+            | identifiersClause
+            | sourcedKeywordsClause
+            | keywordsClause
+            | numbersClause
+            | stringsClause
+            | standardCommentsClause
+            | commentsClause } ;

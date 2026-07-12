@@ -18,7 +18,7 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleNumbersClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(NumberTokenizer), usedTypes, tokens);
 

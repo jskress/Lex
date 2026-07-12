@@ -17,7 +17,7 @@ public interface IExpressionTreeBuilder
     /// <param name="expressions">The list of any sub-expression objects.</param>
     /// <param name="tag">The tag that goes with the type of term parsed.</param>
     /// <returns>The created term.</returns>
-    IExpressionTerm CreateTerm(List<Token> tokens, List<IExpressionTerm> expressions, string tag);
+    IExpressionTerm CreateTerm(List<Token> tokens, List<IExpressionTerm> expressions, string? tag);
 
     /// <summary>
     /// This method is used to create a term that represents a unary operation.

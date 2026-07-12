@@ -14,7 +14,7 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
     /// </summary>
     public List<ClauseParser> Children { get; } = [];
 
-    private string _onMatchTag;
+    private string? _onMatchTag;
 
     /// <summary>
     /// This method is used to add a single token clause for matching against a set of
@@ -35,7 +35,7 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
     /// match.</param>
     /// <param name="tokens">The list of token possibilities.</param>
     /// <returns>This object, for fluency.</returns>
-    public SequentialClauseParser Matching(string errorMessage = null, params Token[] tokens)
+    public SequentialClauseParser Matching(string? errorMessage = null, params Token[] tokens)
     {
         return Matching(new SingleTokenClauseParser(errorMessage, tokens));
     }
@@ -59,7 +59,7 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
     /// match.</param>
     /// <param name="types">The list of token type possibilities.</param>
     /// <returns>This object, for fluency.</returns>
-    public SequentialClauseParser Matching(string errorMessage = null, params Type[] types)
+    public SequentialClauseParser Matching(string? errorMessage = null, params Type[] types)
     {
         return Matching(new SingleTokenClauseParser(errorMessage, types));
     }
@@ -96,7 +96,7 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
     /// match.</param>
     /// <param name="tokens">The list of token possibilities.</param>
     /// <returns>This object, for fluency.</returns>
-    public SequentialClauseParser Then(string errorMessage = null, params Token[] tokens)
+    public SequentialClauseParser Then(string? errorMessage = null, params Token[] tokens)
     {
         return Then(new SingleTokenClauseParser(errorMessage, tokens));
     }
@@ -120,7 +120,7 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
     /// match.</param>
     /// <param name="types">The list of token type possibilities.</param>
     /// <returns>This object, for fluency.</returns>
-    public SequentialClauseParser Then(string errorMessage = null, params Type[] types)
+    public SequentialClauseParser Then(string? errorMessage = null, params Type[] types)
     {
         return Then(new SingleTokenClauseParser(errorMessage, types));
     }
@@ -172,12 +172,12 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
     /// </summary>
     /// <param name="parser">The parser to use.</param>
     /// <returns>The list of tokens matching the clause, or <c>null</c>, if not.</returns>
-    protected override Clause TryParseClause(LexicalParser parser)
+    protected override Clause? TryParseClause(LexicalParser parser)
     {
         List<Token> tokens = [];
         List<IExpressionTerm> expressions = [];
 
-        foreach (Clause parsed in Children
+        foreach (Clause? parsed in Children
                      .Select(clause => clause.TryParse(parser)))
         {
             if (parsed != null)

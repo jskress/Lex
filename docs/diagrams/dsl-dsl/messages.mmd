@@ -1,0 +1,7 @@
+railroad-ebnf-beta
+title "Defining error messages"
+
+messages = messageType ":" string ;
+messageType = "missingRequiredTerm" | "missingRequiredToken" | "tokenTypeMismatch"
+            | "missingExpressionSeparator" | "notEnoughExpressions"
+            | "missingRightParenthesis" | "missingRightOperator" ;

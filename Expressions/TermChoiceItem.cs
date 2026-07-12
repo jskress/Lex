@@ -12,7 +12,7 @@ public abstract class TermChoiceItem;
 /// </summary>
 internal class TokenTermChoiceItem : TermChoiceItem
 {
-    internal Token Token { get; init; }
+    internal required Token Token { get; init; }
     internal bool Suppress { get; init; }
 }
 
@@ -21,7 +21,7 @@ internal class TokenTermChoiceItem : TermChoiceItem
 /// </summary>
 internal class TypeTermChoiceItem : TermChoiceItem
 {
-    internal Type Type { get; init; }
+    internal required Type Type { get; init; }
 }
 
 /// <summary>
@@ -43,9 +43,9 @@ public class ExpressionTermChoiceItem : TermChoiceItem
     /// This property holds the set of possible separators that can occur between expressions.
     /// If this is present, then a separator will be required.
     /// </summary>
-    public ExpressionPossibilitySet Separators { get; }
+    public ExpressionPossibilitySet? Separators { get; }
 
-    public ExpressionTermChoiceItem(int minimum, int maximum, ExpressionPossibilitySet separators)
+    public ExpressionTermChoiceItem(int minimum, int maximum, ExpressionPossibilitySet? separators)
     {
         if (minimum < 0)
             throw new ArgumentException("Minimum must be zero or greater.", nameof(minimum));

@@ -85,9 +85,11 @@ public static partial class LexicalDslFactory
 
         while (!context.Parser.IsAtEnd() && !context.Parser.IsNext(BounderToken.CloseBrace))
         {
-            Clause clause = ExpressionSubClause.TryParse(context.Parser);
+            // ExpressionSubClause carries an "on no clauses matched" error message, and
+            // every one of its alternatives is tagged, so both of these are never null.
+            Clause clause = ExpressionSubClause.TryParse(context.Parser)!;
 
-            ProcessExpressionSubClause(context, expressionParser, clause.Tag);
+            ProcessExpressionSubClause(context, expressionParser, clause.Tag!);
 
             termWasSpecified |= clause.Tag == nameof(ProcessExpressionTermSpec);
         }
@@ -163,7 +165,8 @@ public static partial class LexicalDslFactory
 
         while (!parser.IsAtEnd() && !(!inParentheses && parser.IsNext(endingTokens)))
         {
-            Token token = parser.GetNextToken();
+            // We just verified we're not at the end, so this is never null.
+            Token token = parser.GetNextToken()!;
 
             inParentheses = inParentheses switch
             {
@@ -191,7 +194,7 @@ public static partial class LexicalDslFactory
 
         while (tokens.Count > 0)
         {
-            Token suppressToken = null;
+            Token? suppressToken = null;
             bool suppress = OperatorToken.Divide.Matches(tokens.First());
 
             if (suppress)
@@ -207,7 +210,8 @@ public static partial class LexicalDslFactory
                 }
             }
 
-            Token token = tokens.RemoveFirst();
+            // The while loop guard just verified tokens is non-empty.
+            Token token = tokens.RemoveFirst()!;
 
             if (token.Text == "_expression")
                 AddTermChoiceExpressionEntry(variables, tokens, termChoiceParser, suppressToken);
@@ -230,7 +234,7 @@ public static partial class LexicalDslFactory
     /// <param name="suppressToken">The suppression token, if any.</param>
     private static void AddTermChoiceExpressionEntry(
         IDictionary<string, object> variables, List<Token> tokens, TermChoiceParser termChoiceParser,
-        Token suppressToken)
+        Token? suppressToken)
     {
         if (suppressToken != null)
         {
@@ -240,7 +244,7 @@ public static partial class LexicalDslFactory
             };
         }
 
-        ExpressionPossibilitySet separators = null;
+        ExpressionPossibilitySet? separators = null;
         int min = 1;
         int? max = 1;
 
@@ -276,7 +280,7 @@ public static partial class LexicalDslFactory
     /// <returns>A tuple containg<c>true</c>, if separators should be expected, or <c>false</c>, if not.</returns>
     private static (int, int?) ProcessExpressionCountNotation(List<Token> tokens)
     {
-        Token token = tokens.FirstOrDefault();
+        Token? token = tokens.FirstOrDefault();
         int min = 1;
         int? max = 1;
 
@@ -328,7 +332,7 @@ public static partial class LexicalDslFactory
     /// <param name="variables">The set of variables we are using.</param>
     /// <param name="tokens">The list of tokens to process.</param>
     /// <returns>A possibility set that represents what separators to look for.</returns>
-    private static ExpressionPossibilitySet ProcessExpressionSeparators(
+    private static ExpressionPossibilitySet? ProcessExpressionSeparators(
         IDictionary<string, object> variables, List<Token> tokens)
     {
         ExpressionPossibilitySet set = new ExpressionPossibilitySet();
@@ -360,11 +364,11 @@ public static partial class LexicalDslFactory
     /// <param name="tokens">The list of tokens we are working with.</param>
     private static void AddTermChoiceEntry(
         IDictionary<string, object> variables, TermChoiceParser parser, Token token,
-        Token suppressToken, List<Token> tokens)
+        Token? suppressToken, List<Token> tokens)
     {
         string text = token.Text;
-        Token tokenValue;
-        Type typeValue;
+        Token? tokenValue;
+        Type? typeValue;
 
         if (text[0] == '_' && TokenTypesMap.TryGetValue(text, out var type))
             (tokenValue, typeValue) = ResolveTypeReference(tokens, text, type);
@@ -416,8 +420,9 @@ public static partial class LexicalDslFactory
     {
         if (OperatorToken.DoubleArrow.Matches(tokens.FirstOrDefault()))
         {
-            Token arrowToken = tokens.RemoveFirst();
-            Token next = tokens.RemoveFirst();
+            // We just matched the first token, so removing it is never null.
+            Token arrowToken = tokens.RemoveFirst()!;
+            Token? next = tokens.RemoveFirst();
 
             if (next is StringToken token)
                 termChoiceParser.Tag = token.Text;
@@ -582,7 +587,8 @@ public static partial class LexicalDslFactory
         // If the precedence is explicitly given...
         if (OperatorToken.Colon.Matches(tokens.FirstOrDefault()))
         {
-            Token colon = tokens.RemoveFirst();
+            // We just matched the first token, so removing it is never null.
+            Token colon = tokens.RemoveFirst()!;
 
             if (tokens.Count == 0)
             {
@@ -592,7 +598,7 @@ public static partial class LexicalDslFactory
                 };
             }
 
-            Token token = tokens.RemoveFirst();
+            Token token = tokens.RemoveFirst()!;
 
             return token switch
             {
@@ -623,11 +629,11 @@ public static partial class LexicalDslFactory
     /// <param name="variables">The set of variables we are using.</param>
     /// <param name="token">The token that represents the variable to resolve.</param>
     /// <returns>The token that the given one resolves to.</returns>
-    private static Token ResolveVariableAsToken(IDictionary<string, object> variables, Token token)
+    private static Token ResolveVariableAsToken(IDictionary<string, object> variables, Token? token)
     {
         if (token is IdToken idToken)
         {
-            if (variables.TryGetValue(idToken.Text, out object value) &&
+            if (variables.TryGetValue(idToken.Text, out object? value) &&
                 value is Token valueToken)
                 return valueToken;
 
@@ -654,9 +660,10 @@ public static partial class LexicalDslFactory
     {
         while (tokens.Count > 0)
         {
-            Token typeToken = tokens.RemoveFirst();
-            Token colonToken = tokens.RemoveFirst();
-            Token textToken = tokens.RemoveFirst();
+            // The while loop guard just verified tokens is non-empty.
+            Token typeToken = tokens.RemoveFirst()!;
+            Token? colonToken = tokens.RemoveFirst();
+            Token? textToken = tokens.RemoveFirst();
 
             if (typeToken is not IdToken ||
                 !Enum.TryParse(typeToken.Text, true, out ExpressionParseMessageTypes messageType) ||

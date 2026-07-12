@@ -1,0 +1,6 @@
+railroad-ebnf-beta
+title "Operators clause"
+
+operatorsClause = "operators" stringIdOrKeywordListClause reportClause ;
+stringIdOrKeywordListClause = ( string | identifier | keyword ) { "," ( string | identifier | keyword ) } ;
+reportClause = [ "report" | "redact" ] ;

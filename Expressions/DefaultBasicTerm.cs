@@ -10,12 +10,19 @@ public class DefaultBasicTerm : DefaultExpressionTerm
     /// <summary>
     /// This property holds the list of child terms that make up this term.
     /// </summary>
-    public IReadOnlyList<DefaultExpressionTerm> Terms { get; internal init; }
+    public IReadOnlyList<DefaultExpressionTerm> Terms { get; }
 
     /// <summary>
     /// This property holds the tag that was configured with the term parser.
     /// </summary>
-    public string Tag { get; internal init; }
+    public string? Tag { get; }
+
+    internal DefaultBasicTerm(IReadOnlyList<Token> tokens, IReadOnlyList<DefaultExpressionTerm> terms, string? tag)
+        : base(tokens)
+    {
+        Terms = terms;
+        Tag = tag;
+    }
 
     /// <summary>
     /// This method produces a text representation of this term.

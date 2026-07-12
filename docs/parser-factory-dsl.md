@@ -18,9 +18,9 @@ the parser; string tokenizers are an exception (sort of) to this (we'll talk abo
 later).
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/top-level-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/top-level.png">
-  <img alt="Top level parser factory DSL" src="images/parser-dsl/top-level.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/top-level-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/top-level.svg">
+  <img alt="Top level parser factory DSL" src="images/parser-dsl/top-level.svg">
 </picture>
 
 You may specify either `report` or `redact` at the end of a tokenizer clause to control
@@ -36,9 +36,9 @@ for details about how the tokenizer that this clause produces works.
 This is the syntax for specifying a based number tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/basedNumbersClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/basedNumbersClause.png">
-  <img alt="Based number tokenizer" src="images/parser-dsl/basedNumbersClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/basedNumbersClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/basedNumbersClause.svg">
+  <img alt="Based number tokenizer" src="images/parser-dsl/basedNumbersClause.svg">
 </picture>
 
 By default, the based number tokenizer can parse literals in any of the 3 supported bases.
@@ -57,9 +57,9 @@ about how the tokenizer that this clause produces works.
 This is the syntax for specifying a bounder tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/boundersClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/boundersClause.png">
-  <img alt="Bounder tokenizer" src="images/parser-dsl/boundersClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/boundersClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/boundersClause.svg">
+  <img alt="Bounder tokenizer" src="images/parser-dsl/boundersClause.svg">
 </picture>
 
 If the optional `of` clause is given the string must contain **all** characters you want
@@ -73,9 +73,9 @@ about how the tokenizer that this clause produces works.
 This is the syntax for specifying a standard comments tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/standardCommentsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/standardCommentsClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/standardCommentsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/standardCommentsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/standardCommentsClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/standardCommentsClause.svg">
 </picture>
 
 You may use the optional `or` clause as many times as needed to register any extra comment
@@ -89,9 +89,9 @@ about how the tokenizer that this clause produces works.
 This is the syntax for specifying a comments tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/commentsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/commentsClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/commentsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/commentsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/commentsClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/commentsClause.svg">
 </picture>
 
 You may use the optional `or` clause as many times as needed to register any extra comment
@@ -105,9 +105,9 @@ details about how the tokenizer that this clause produces works.
 This is the syntax for specifying an identifier tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/identifiersClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/identifiersClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/identifiersClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/identifiersClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/identifiersClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/identifiersClause.svg">
 </picture>
 
 You may use the optional `starting with` clause to specify what characters you want to allow
@@ -131,9 +131,9 @@ about how the tokenizer that this clause produces works.
 This is the syntax for specifying a sourced keyword tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/sourcedKeywordsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/sourcedKeywordsClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/sourcedKeywordsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/sourcedKeywordsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/sourcedKeywordsClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/sourcedKeywordsClause.svg">
 </picture>
 
 The set of keywords to configure the tokenizer with may come from your language specification,
@@ -159,9 +159,9 @@ about how the tokenizer that this clause produces works.
 This is the syntax for specifying a keyword tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/keywordsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/keywordsClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/keywordsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/keywordsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/keywordsClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/keywordsClause.svg">
 </picture>
 
 The comma-delimited list of strings or identifiers (interpreted here essentially as unquoted
@@ -177,9 +177,9 @@ about how the tokenizer that this clause produces works.
 This is the syntax for specifying a number tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/numbersClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/numbersClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/numbersClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/numbersClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/numbersClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/numbersClause.svg">
 </picture>
 
 You may use the optional `integral` prefix to create a tokenizer that will recognize numeric
@@ -202,9 +202,9 @@ about how the tokenizer that this clause produces works.
 This is the syntax for specifying a sourced operator tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/sourcedOperatorsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/sourcedOperatorsClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/sourcedOperatorsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/sourcedOperatorsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/sourcedOperatorsClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/sourcedOperatorsClause.svg">
 </picture>
 
 The set of operators to configure the tokenizer with may come from either the full default
@@ -231,9 +231,9 @@ about how the tokenizer that this clause produces works.
 This is the syntax for specifying an operator tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/operatorsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/operatorsClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/operatorsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/operatorsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/operatorsClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/operatorsClause.svg">
 </picture>
 
 The comma-delimited list of strings or identifiers make up the list of operators that the
@@ -253,9 +253,9 @@ that this clause produces works:
 This is the syntax for specifying a string tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/stringsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/stringsClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/stringsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/stringsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/stringsClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/stringsClause.svg">
 </picture>
 
 #### `single quoted strigs`
@@ -304,9 +304,9 @@ details about how the tokenizer that this clause produces works.
 This is the syntax for specifying a whitespace tokenizer:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/whitespaceClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/whitespaceClause.png">
-  <img alt="Standard comments tokenizer" src="images/parser-dsl/whitespaceClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/parser-dsl/whitespaceClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/parser-dsl/whitespaceClause.svg">
+  <img alt="Standard comments tokenizer" src="images/parser-dsl/whitespaceClause.svg">
 </picture>
 
 You may include the optional `with separated lineEnds` clause to have the tokenizer report

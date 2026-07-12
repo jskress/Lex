@@ -9,7 +9,7 @@ namespace Lex.Tokenizers;
 /// </summary>
 public class EscapeResolver
 {
-    private const string HexCharacters = "01234556789abcdefABCDEF";
+    private const string HexCharacters = "0123456789abcdefABCDEF";
 
     /// <summary>
     /// This is our default dictionary for mapping an escaped character to the single character
@@ -17,7 +17,7 @@ public class EscapeResolver
     /// </summary>
     private static readonly Dictionary<char, string> DefaultSingleCharMap = new ()
     {
-        { '\'', "\\'" },
+        { '\'', "'" },
         { '"', "\"" },
         { '\\', "\\" },
         { '0', "\0" },
@@ -38,7 +38,7 @@ public class EscapeResolver
     private readonly Dictionary<char, string> _singleCharMap;
     private readonly string _consumers;
 
-    public EscapeResolver(Dictionary<char, string> singleCharMap = null, string consumers = DefaultConsumers)
+    public EscapeResolver(Dictionary<char, string>? singleCharMap = null, string consumers = DefaultConsumers)
     {
         _singleCharMap = singleCharMap ?? DefaultSingleCharMap;
         _consumers = consumers;
@@ -55,7 +55,7 @@ public class EscapeResolver
     /// <returns>The characters, if any, that the escape sequence resolves to.</returns>
     public string ResolveEscape(LexicalParser parser, char ch)
     {
-        if (_singleCharMap.TryGetValue(ch, out string result))
+        if (_singleCharMap.TryGetValue(ch, out string? result))
             return result;
 
         if (_consumers.Contains(ch))

@@ -1,0 +1,14 @@
+railroad-ebnf-beta
+title "Strings clause"
+
+stringsClause = stringsSpecificationClause [ "raw" ] repeatToEscapeClause reportClause ;
+stringsSpecificationClause = singleQuotedStringsClause
+                            | doubleQuotedStringsClause
+                            | tripleQuotedStringsClause
+                            | genericStringsClause ;
+singleQuotedStringsClause = "single" "quoted" "strings" [ "multiChar" ] ;
+doubleQuotedStringsClause = "double" "quoted" "strings" ;
+tripleQuotedStringsClause = "triple" "quoted" "strings" [ "single" "line" ] [ "not" "extensible" ] ;
+genericStringsClause = "strings" "bounded" "by" string [ "multiLine" ] ;
+repeatToEscapeClause = [ "repeat" "to" "escape" ] ;
+reportClause = [ "report" | "redact" ] ;

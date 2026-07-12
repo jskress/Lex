@@ -192,6 +192,116 @@ specification declares that the "no" keyword must be followed by one of 3 other 
 and that that clause may repeat up to 3 times.  The factory code itself, however, further
 validates that each option that may follow the "no" keyword is specified only once.
 
+### Reading Captured Clauses
+
+Interpreting a captured clause often means walking its `Tokens` and `Expressions` lists in
+the order your grammar captured them — skip a bounder here, pull out an identifier's text
+there, grab the next expression.  Doing that by hand-indexing into the lists (`clause.Tokens[2].Text`,
+and so on) works, but it's easy to get an index wrong, and it doesn't read especially well.
+The [`ClauseReader`](../Clauses/ClauseReader.cs) class gives you a sequential, read-once-
+each way to walk a clause instead.  Get one from a clause's `Reader()` method.
+
+```csharp
+ClauseReader reader = clause.Reader();
+
+reader.SkipIfNextTextIs("(");
+
+string name = reader.NextText();
+NumberToken age = reader.NextToken<NumberToken>();
+
+reader.SkipIfNextTextIs(")");
+```
+
+`NextToken()` and `NextText()` read the next token (or its text); `NextToken<T>()` does the
+same but also requires the token to be of a specific type, throwing an `InvalidOperationException`
+with a clear message if it isn't.  `PeekToken()` looks at the next token without consuming
+it, and `HasMoreTokens` tells you whether there's anything left.  `SkipIfNextTextIs()` is a
+small convenience for skipping past punctuation or other bounding tokens you don't need to
+look at, and it doesn't complain if what follows doesn't match.  The same set of operations
+(`NextExpression()`, `PeekExpression()`, `HasMoreExpressions`) is available for a clause's
+captured expressions.
+
+Reading from a `ClauseReader` never modifies the `Clause` it was created from, so you're
+free to create more than one reader over the same clause, or re-read it from the start with
+a fresh `Reader()` call.
+
+### Dispatching Clauses
+
+Once you have a tagged clause in hand, a very common next step is to route it to whichever
+piece of your own code knows how to interpret it, based on its tag.  This is exactly how
+Lex interprets its own DSL specifications internally: a dictionary of handlers, keyed by
+tag, looked up once a clause has been captured.  Rather than have every consumer reimplement
+that same dispatch table, Lex provides the
+[`ClauseDispatcher`](../Clauses/ClauseDispatcher.cs) class to do it for you.
+
+```csharp
+ClauseDispatcher dispatcher = new ClauseDispatcher()
+    .On("declareVariable", clause => HandleDeclareVariable(clause))
+    .On("assignVariable", clause => HandleAssignVariable(clause))
+    .OnUnhandled(clause => throw new TokenException($"Don't know how to handle \"{clause.Tag}\"."));
+
+// Later, once you've captured a clause...
+dispatcher.Dispatch(clause);
+```
+
+Register a handler for each tag your grammar can produce with `On()`.  If `Dispatch()` is
+given a clause whose tag (or lack of one) has no registered handler, it throws an
+`ArgumentException` by default; register a catch-all with `OnUnhandled()` if you'd rather
+handle that case yourself (or ignore it).  Since your handlers are just lambdas, they can
+close over whatever context they need (a symbol table, an in-progress AST, etc.) — the
+dispatcher itself is stateless beyond the tag-to-handler mapping.
+
+If your handlers need to produce a result rather than just act on the clause — building up
+an AST node from each clause, for instance — use the generic `ClauseDispatcher<TResult>`
+instead; it works the same way, but `On()` and `OnUnhandled()` take `Func<Clause, TResult>`
+handlers and `Dispatch()` returns whatever the resolved handler produces.
+
+### Diagnosing Match Failures
+
+Recall from [Capturing Tokens](#capturing-tokens) that a clause parser graph reports failure
+in one of two ways: it throws, if some clause along the way had an explicit error message
+configured, or it returns `null` if not.  Returning `null` is what lets clause parsers
+compose and backtrack — a `SwitchClauseParser`, for instance, relies on each alternative it
+tries returning `null` (rather than throwing) so it can move on to the next one.  The cost
+is that, by default, a top-level parse that fails this way gives you no explanation of what
+went wrong; you'd have to hand-annotate every clause in your grammar with an error message
+to get one, and doing that everywhere tends to fight with the backtracking you need in the
+first place.
+
+The [`FailureTracker`](../Parser/FailureTracker.cs) class gives you a way to get a good
+default error message without doing that.  Attach one to your `LexicalParser` before you
+start parsing:
+
+```csharp
+FailureTracker tracker = new FailureTracker();
+
+parser.FailureTracker = tracker;
+
+Clause clause = topLevelClauseParser.TryParse(parser);
+
+if (clause == null)
+{
+    string message = tracker.BuildMessage() ?? "Unable to parse the input.";
+
+    throw new TokenException(message) { Line = tracker.Line, Column = tracker.Column };
+}
+```
+
+While attached, every `SingleTokenClauseParser` that fails to match without an error
+message of its own reports the position it failed at and a description of what it was
+looking for to the tracker.  The tracker keeps only the reports from the *furthest* position
+reached across every attempt made during the parse — since that's the point your grammar
+actually got closest to matching, it's almost always a much better error location than
+wherever the outermost clause parser gave up.  If more than one thing was being looked for
+at that same furthest position (e.g., the alternatives of a switch clause that all fail at
+the same point), `Expectations` will have more than one entry, and `BuildMessage()` will
+list them all.
+
+Attaching a tracker has no effect on parsing itself — it's purely an opt-in diagnostic aid,
+so there's no harm in always attaching one and only consulting it when a top-level parse
+attempt comes back `null`.  If you're implementing your own clause parsers, you can report
+to a tracker the same way `SingleTokenClauseParser` does, via its `Record()` method.
+
 ### Debugging
 
 As I'm sure you've realized, when clause parser graphs get complicated, it can become

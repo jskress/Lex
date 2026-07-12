@@ -1,3 +1,5 @@
+using Lex.Tokens;
+
 namespace Lex.Expressions;
 
 /// <summary>
@@ -8,12 +10,20 @@ public class DefaultBinaryOperation : DefaultExpressionTerm
     /// <summary>
     /// This property holds the left argument term for the binary operation.
     /// </summary>
-    public DefaultExpressionTerm LeftTerm { get; internal init; }
+    public DefaultExpressionTerm LeftTerm { get; }
 
     /// <summary>
     /// This property holds the right argument term for the binary operation.
     /// </summary>
-    public DefaultExpressionTerm RightTerm { get; internal init; }
+    public DefaultExpressionTerm RightTerm { get; }
+
+    internal DefaultBinaryOperation(
+        IReadOnlyList<Token> tokens, DefaultExpressionTerm leftTerm, DefaultExpressionTerm rightTerm)
+        : base(tokens)
+    {
+        LeftTerm = leftTerm;
+        RightTerm = rightTerm;
+    }
 
     /// <summary>
     /// This method produces a text representation of this term.

@@ -1,0 +1,10 @@
+railroad-ebnf-beta
+title "Defining a term"
+
+term = ( switchClause
+       | sequentialClause
+       | "_expression"
+       | tokenType [ "(" string ")" ]
+       | identifier ) repetitionClause [ "??" string ] ;
+tokenType = "_bounder" | "_comment" | "_identifier" | "_keyword"
+          | "_number" | "_operator" | "_string" | "_whitespace" ;

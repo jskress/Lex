@@ -18,11 +18,11 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleSourcedOperatorsClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(OperatorTokenizer), usedTypes, tokens);
 
-        (Token source, _) = (tokens.RemoveFirst(), tokens.RemoveFirst());
+        (Token source, _) = (tokens.RemoveFirst()!, tokens.RemoveFirst());
         OperatorTokenizer tokenizer;
 
         if (source.Text == "predefined")
@@ -43,7 +43,7 @@ public static partial class LexicalParserFactory
 
         if (tokens.Count > 0 && IncludeExcludeOptions.Contains(tokens[0].Text))
         {
-            string option = tokens.RemoveFirst().Text;
+            string option = tokens.RemoveFirst()!.Text;
             HashSet<string> strings = GetOperatorList(tokens);
 
             if (option == "including")
@@ -64,7 +64,7 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleOperatorsClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(OperatorTokenizer), usedTypes, tokens);
 
@@ -89,7 +89,7 @@ public static partial class LexicalParserFactory
                 result.Add(token.Text);
             else // IdToken
             {
-                if (OperatorToken.NamedOperators.TryGetValue(token.Text, out OperatorToken operatorToken))
+                if (OperatorToken.NamedOperators.TryGetValue(token.Text, out OperatorToken? operatorToken))
                     result.Add(operatorToken.Text);
                 else
                 {

@@ -11,7 +11,7 @@ public class TermChoiceParser
     /// <summary>
     /// This property holds the tag to report when this term choice is selected.
     /// </summary>
-    public string Tag { get; set; }
+    public string? Tag { get; set; }
 
     /// <summary>
     /// This property reports whether the term choice parser is empty.
@@ -147,7 +147,7 @@ public class TermChoiceParser
     /// <param name="expressionParser">The controlling expression parser.</param>
     /// <param name="parser">The parser to read from.</param>
     /// <returns>An appropriate term or <c>null</c>.</returns>
-    internal IExpressionTerm TryParse(ExpressionParser expressionParser, LexicalParser parser)
+    internal IExpressionTerm? TryParse(ExpressionParser expressionParser, LexicalParser parser)
     {
         if (_items.Count == 0)
             throw new Exception("Term choice parser has no items.");
@@ -155,19 +155,20 @@ public class TermChoiceParser
         List<Token> tokens = [];
         List<IExpressionTerm> terms = [];
         ExpressionParseMessageTypes messageType = ExpressionParseMessageTypes.None;
-        string errorArgument = null;
+        string? errorArgument = null;
         bool expressionSeen = false;
 
         foreach (TermChoiceItem item in _items)
         {
-            Token token = parser.PeekNextToken();
+            Token? token = parser.PeekNextToken();
 
             switch (item)
             {
                 case TokenTermChoiceItem tokenItem:
                     if (parser.IsNext(tokenItem.Token))
                     {
-                        token = parser.GetNextToken();
+                        // We already know a token is waiting, since IsNext() just said so.
+                        token = parser.GetNextToken()!;
 
                         if (!tokenItem.Suppress)
                             tokens.Add(token);
@@ -180,7 +181,7 @@ public class TermChoiceParser
                     break;
                 case TypeTermChoiceItem typeItem:
                     if (parser.IsNextOfType(typeItem.Type))
-                        tokens.Add(parser.GetNextToken());
+                        tokens.Add(parser.GetNextToken()!);
                     else
                     {
                         messageType = ExpressionParseMessageTypes.TokenTypeMismatch;
@@ -200,7 +201,9 @@ public class TermChoiceParser
             {
                 if (expressionSeen)
                 {
-                    throw new TokenException(expressionParser.ResolveMessage(messageType, errorArgument))
+                    // messageType and errorArgument are always set together, so errorArgument
+                    // is guaranteed non-null whenever messageType is not None.
+                    throw new TokenException(expressionParser.ResolveMessage(messageType, errorArgument!))
                     {
                         Token = token
                     };
@@ -227,7 +230,7 @@ public class TermChoiceParser
         ExpressionParser expressionParser, LexicalParser parser,
         ExpressionTermChoiceItem item, List<IExpressionTerm> terms)
     {
-        IExpressionTerm term = expressionParser.ParseExpressionTerm(parser);
+        IExpressionTerm? term = expressionParser.ParseExpressionTerm(parser, item.Minimum == 0);
 
         if (term != null)
         {

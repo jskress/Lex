@@ -14,7 +14,7 @@ internal static class ListExtensions
     /// <param name="tokens">The list of tokens to pull from.</param>
     /// <param name="index">The index of the token to get the text for.</param>
     /// <returns>The text of the indicated token, or <c>null</c>.</returns>
-    internal static string GetTokenText(this List<Token> tokens, int index = 0)
+    internal static string? GetTokenText(this List<Token> tokens, int index = 0)
     {
         return index < tokens.Count ? tokens[index].Text : null;
     }
@@ -25,7 +25,7 @@ internal static class ListExtensions
     /// </summary>
     /// <param name="list">The list to remove the element from.</param>
     /// <returns>The element from the list.</returns>
-    internal static T RemoveFirst<T>(this List<T> list)
+    internal static T? RemoveFirst<T>(this List<T> list)
         where T : class
     {
         if (list == null || list.Count == 0)

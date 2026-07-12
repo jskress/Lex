@@ -1,0 +1,8 @@
+railroad-ebnf-beta
+title "Sourced keywords clause"
+
+sourcedKeywordsClause = "dsl" "keywords" operatorsOrKeywordsModifierClause letterCaseStyleClause reportClause ;
+operatorsOrKeywordsModifierClause = [ ( "including" | "excluding" ) stringIdOrKeywordListClause ] ;
+stringIdOrKeywordListClause = ( string | identifier | keyword ) { "," ( string | identifier | keyword ) } ;
+letterCaseStyleClause = [ "lowerCase" | "upperCase" | "asIs" ] ;
+reportClause = [ "report" | "redact" ] ;

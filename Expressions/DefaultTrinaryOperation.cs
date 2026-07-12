@@ -15,22 +15,33 @@ public class DefaultTrinaryOperation : DefaultExpressionTerm
     /// <summary>
     /// This property holds the list of tokens that make up the right hand operator.
     /// </summary>
-    public IReadOnlyList<Token> RightTokens { get; internal init; }
+    public IReadOnlyList<Token> RightTokens { get; }
 
     /// <summary>
     /// This property holds the left argument term for the binary operation.
     /// </summary>
-    public DefaultExpressionTerm LeftTerm { get; internal init; }
+    public DefaultExpressionTerm LeftTerm { get; }
 
     /// <summary>
     /// This property holds the middle argument term for the binary operation.
     /// </summary>
-    public DefaultExpressionTerm MiddleTerm { get; internal init; }
+    public DefaultExpressionTerm MiddleTerm { get; }
 
     /// <summary>
     /// This property holds the right argument term for the binary operation.
     /// </summary>
-    public DefaultExpressionTerm RightTerm { get; internal init; }
+    public DefaultExpressionTerm RightTerm { get; }
+
+    internal DefaultTrinaryOperation(
+        IReadOnlyList<Token> leftTokens, IReadOnlyList<Token> rightTokens,
+        DefaultExpressionTerm leftTerm, DefaultExpressionTerm middleTerm, DefaultExpressionTerm rightTerm)
+        : base(leftTokens)
+    {
+        RightTokens = rightTokens;
+        LeftTerm = leftTerm;
+        MiddleTerm = middleTerm;
+        RightTerm = rightTerm;
+    }
 
     /// <summary>
     /// This method produces a text representation of this term.

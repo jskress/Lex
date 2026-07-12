@@ -10,7 +10,7 @@ public class TokenException : Exception
     /// <summary>
     /// This property holds the token relating to the exception.
     /// </summary>
-    public Token Token
+    public Token? Token
     {
         get => _token;
         set
@@ -40,7 +40,7 @@ public class TokenException : Exception
     /// </summary>
     public int Column { get; set; } = -1;
 
-    private Token _token;
+    private Token? _token;
 
     public TokenException() {}
     public TokenException(string message) : base(message) {}

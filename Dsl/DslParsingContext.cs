@@ -24,22 +24,24 @@ internal class DslParsingContext
     /// <summary>
     /// This property holds the parser that is being used to parse the DSL specification.
     /// </summary>
-    internal LexicalParser Parser { get; init; }
+    internal required LexicalParser Parser { get; init; }
 
     /// <summary>
     /// This property holds the set of variables we are using.
     /// </summary>
-    internal Dictionary<string, object> Variables { get; init; }
+    internal required Dictionary<string, object> Variables { get; init; }
 
     /// <summary>
-    /// This property holds the list of tokens that make up the clause to process.
+    /// This property holds the list of tokens that make up the clause to process.  This is
+    /// always overwritten (see <see cref="LexicalDslFactory"/>) before it is used, so the
+    /// empty list here is just a placeholder.
     /// </summary>
-    internal List<Token> Tokens { get; set; }
+    internal List<Token> Tokens { get; set; } = [];
 
     /// <summary>
     /// The DSL we are building up.
     /// </summary>
-    internal Dsl Dsl { get; init; }
+    internal required Dsl Dsl { get; init; }
 
     /// <summary>
     /// This property holds a list of deferred token lists to use in populating sequential

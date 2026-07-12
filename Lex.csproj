@@ -3,8 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>disable</Nullable>
-        <LangVersion>preview</LangVersion>
+        <Nullable>enable</Nullable>
+        <LangVersion>12.0</LangVersion>
         <Title>The Lex Parser</Title>
         <Authors>J. Stephen Kress</Authors>
         <Description>A Lexical Parser in C#</Description>
@@ -16,7 +16,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageReleaseNotes>Full release notes may be found here: https://github.com/jskress/Lex/blob/main/docs/release-notes.md</PackageReleaseNotes>
         <PackageTags>dsl lexical parser tokens clauses expressions</PackageTags>
-        <Version>1.1.4</Version>
+        <Version>1.2.0</Version>
     </PropertyGroup>
 
     <ItemGroup>

@@ -15,7 +15,7 @@ public class OperatorTokenizer : FixedListTokenizer
         "!=", "<", "<=", ">", ">=", "->", "=>", "..", "?", "??"
     ];
 
-    public OperatorTokenizer(LexicalParser parser, HashSet<string> operators = null)
+    public OperatorTokenizer(LexicalParser parser, HashSet<string>? operators = null)
         : base(parser, operators ?? DefaultOperators, "an operator") {}
 
     /// <summary>
