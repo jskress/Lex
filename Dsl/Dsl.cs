@@ -29,15 +29,15 @@ public class Dsl
     /// This property holds the object that will be used to parse expressions for the
     /// language.
     /// </summary>
-    public ExpressionParser ExpressionParser { get; internal set; }
+    public ExpressionParser? ExpressionParser { get; internal set; }
 
     private readonly Dictionary<string, ClauseParser> _clauses = new ();
     private readonly List<KeywordToken> _keywords = [];
     private readonly List<OperatorToken> _operators = [];
 
-    private string _lexicalParserSpec;
+    private string? _lexicalParserSpec;
 
-    internal Dsl(ClauseParser topLevelClauseParser = null)
+    internal Dsl(ClauseParser? topLevelClauseParser = null)
     {
         if (topLevelClauseParser != null)
             SetTopLevelClause(topLevelClauseParser);
@@ -104,9 +104,9 @@ public class Dsl
     /// <param name="state">The new debugging state for that parser.</param>
     /// <param name="fullGraph">A flag noting whether just the named parser should be
     /// updated or it, along with all its descendents.</param>
-    public void SetDebugging(string name, bool state, bool fullGraph)
+    public void SetDebugging(string? name, bool state, bool fullGraph)
     {
-        if (_clauses.TryGetValue(name ?? TopLevelClauseParser, out ClauseParser parser))
+        if (_clauses.TryGetValue(name ?? TopLevelClauseParser, out ClauseParser? parser))
         {
             if (fullGraph)
                 parser.SetDebugging(state);
@@ -123,14 +123,14 @@ public class Dsl
     /// <param name="consumer">The new debugging information consumer for that parser.</param>
     /// <param name="fullGraph">A flag noting whether just the named parser should be
     /// updated or it, along with all its descendents.</param>
-    public void SetDebugConsumer(string name, Action<ClauseParserDebugInfo> consumer, bool fullGraph)
+    public void SetDebugConsumer(string? name, Action<ClauseParserDebugInfo>? consumer, bool fullGraph)
     {
-        if (_clauses.TryGetValue(name ?? TopLevelClauseParser, out ClauseParser parser))
+        if (_clauses.TryGetValue(name ?? TopLevelClauseParser, out ClauseParser? parser))
         {
             if (fullGraph)
                 parser.SetDebugConsumer(consumer);
             else
-                parser.DebugConsumer = consumer;
+                parser.DebugConsumer = consumer!;
         }
     }
 
@@ -155,7 +155,7 @@ public class Dsl
     /// <param name="parser">The parser to use.</param>
     /// <returns>The next parsed claus or <c>null</c> if the top-level clause in the DSL
     /// was not matched.</returns>
-    public Clause ParseNextClause(LexicalParser parser)
+    public Clause? ParseNextClause(LexicalParser parser)
     {
         return ParseClause(parser, TopLevelClauseParser);
     }
@@ -167,9 +167,9 @@ public class Dsl
     /// <param name="parser"></param>
     /// <param name="tag"></param>
     /// <returns></returns>
-    public Clause ParseClause(LexicalParser parser, string tag)
+    public Clause? ParseClause(LexicalParser parser, string tag)
     {
-        if (!_clauses.TryGetValue(tag, out ClauseParser clause))
+        if (!_clauses.TryGetValue(tag, out ClauseParser? clause))
         {
             throw tag == TopLevelClauseParser
                 ? new ArgumentException("There is no top-level clause parser defined for this DSL.")
@@ -191,6 +191,6 @@ public class Dsl
     /// <returns>The parsed expression as an expression tree.</returns>
     public IExpressionTerm ParseExpression(LexicalParser parser)
     {
-        return ExpressionParser.ParseExpression(parser);
+        return ExpressionParser!.ParseExpression(parser);
     }
 }

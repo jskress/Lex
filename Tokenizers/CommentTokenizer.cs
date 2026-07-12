@@ -11,7 +11,7 @@ public class CommentTokenizer : Tokenizer
     private readonly List<string> _startMarkers;
     private readonly List<string> _endMarkers;
 
-    private string _terminator;
+    private string? _terminator;
 
     public CommentTokenizer(LexicalParser parser) : base(parser)
     {
@@ -105,17 +105,20 @@ public class CommentTokenizer : Tokenizer
     /// <returns>The parsed token.</returns>
     protected override Token ParseToken(char ch)
     {
+        // ParseToken() is only ever called after CanStart() has matched (and, therefore,
+        // set _terminator), so it is guaranteed to be non-null here.
+        string terminator = _terminator!;
         (int data, ch) = Read();
 
-        while (data >= 0 && !IsNext(ch, _terminator))
+        while (data >= 0 && !IsNext(ch, terminator))
         {
             Builder.Append(ch);
 
             (data, ch) = Read();
         }
 
-        Builder.Append(_terminator);
-        Skip(_terminator.Length - 1);
+        Builder.Append(terminator);
+        Skip(terminator.Length - 1);
 
         return new CommentToken(Builder.ToString());
     }

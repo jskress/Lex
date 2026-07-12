@@ -18,14 +18,14 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleIdentifiersClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(IdTokenizer), usedTypes, tokens);
 
         tokens.RemoveFirst();
 
-        string starters = null;
-        string members = null;
+        string? starters = null;
+        string? members = null;
 
         if (tokens.GetTokenText() == "starting")
         {
@@ -42,7 +42,7 @@ public static partial class LexicalParserFactory
         }
 
         IdTokenizer tokenizer = new IdTokenizer(parser, starters, members);
-        string style = tokens.GetTokenText();
+        string? style = tokens.GetTokenText();
 
         if (Enum.TryParse(style, true, out LetterCaseStyle letterCaseStyle))
         {

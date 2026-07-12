@@ -83,7 +83,7 @@ public abstract class FixedListTokenizer : Tokenizer
     /// </summary>
     /// <param name="ch">The first character that belongs to the token.</param>
     /// <returns>The parsed text or <c>null</c>.</returns>
-    private string FindMatch(char ch)
+    private string? FindMatch(char ch)
     {
         string[] matching = GetStartsWith(_possibilities, ch);
 

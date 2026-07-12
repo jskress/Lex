@@ -1,0 +1,7 @@
+railroad-ebnf-beta
+title "Standard comments clause"
+
+standardCommentsClause = "standard" "comments" orBoundedByClause reportClause ;
+orBoundedByClause = { "or" commentBounderClause } ;
+commentBounderClause = string "and" ( string | "lineEnd" ) ;
+reportClause = [ "report" | "redact" ] ;

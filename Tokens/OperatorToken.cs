@@ -254,7 +254,7 @@ public class OperatorToken : Token
         {
             string name = info.Name.ToLowerInvariant();
 
-            result[name] = (OperatorToken) info.GetValue(null);
+            result[name] = (OperatorToken) info.GetValue(null)!;
         }
 
         return result;

@@ -39,9 +39,12 @@ public class ExpressionClauseParser : ClauseParser
     /// </summary>
     /// <param name="parser">The parser to use.</param>
     /// <returns>The list of tokens matching the clause, or <c>null</c>, if not.</returns>
-    protected override Clause TryParseClause(LexicalParser parser)
+    protected override Clause? TryParseClause(LexicalParser parser)
     {
-        IExpressionTerm expression = _expressionParser.ParseExpressionTerm(parser, _optional);
+        IExpressionTerm? expression = _expressionParser.ParseExpressionTerm(parser, _optional);
+
+        if (expression == null)
+            return null;
 
         return new Clause
         {

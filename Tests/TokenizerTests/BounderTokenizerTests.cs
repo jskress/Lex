@@ -72,7 +72,7 @@ public class BounderTokenizerTests : TokenizerTestsBase
     {
         LexicalParser parser = new ();
 
-        ArgumentException exception = Assert.ThrowsException<ArgumentException>(
+        ArgumentException exception = Assert.ThrowsExactly<ArgumentException>(
             () => _ = new BounderTokenizer(parser, "( )"));
 
         Assert.AreEqual("Whitespace is not allowed in the set of bounder characters.", exception.Message);

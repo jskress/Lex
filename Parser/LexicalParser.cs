@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Lex.Tokenizers;
 using Lex.Tokens;
 
@@ -10,10 +11,31 @@ namespace Lex.Parser;
 /// </summary>
 public sealed class LexicalParser : IDisposable
 {
+    /// <summary>
+    /// This property holds the line of the last position this parser looked at in its
+    /// source.  This is primarily useful for diagnostics when there's no token available
+    /// to report a position from (e.g., at the end of input).
+    /// </summary>
+    public int Line => _line;
+
+    /// <summary>
+    /// This property holds the column of the last position this parser looked at in its
+    /// source.  This is primarily useful for diagnostics when there's no token available
+    /// to report a position from (e.g., at the end of input).
+    /// </summary>
+    public int Column => _column;
+
+    /// <summary>
+    /// This property, if set, notes the failure tracker that clause parsers should report
+    /// their unannotated match failures to.  See <see cref="FailureTracker"/> for details.
+    /// By default, this is <c>null</c>, meaning no tracking is done.
+    /// </summary>
+    public FailureTracker? FailureTracker { get; set; }
+
     private readonly List<Tokenizer> _tokenizers = [];
     private readonly LinkedList<Token> _returnedTokens = [];
 
-    private RewindingStreamReader _source;
+    private RewindingStreamReader? _source;
     private int _line;
     private int _column;
     private bool _disposed;
@@ -35,10 +57,10 @@ public sealed class LexicalParser : IDisposable
     /// </summary>
     /// <typeparam name="T">The type of the desired tokenizer.</typeparam>
     /// <returns>The tokenizer of the requested type or <c>null</c>.</returns>
-    public T GetTokenizer<T>()
+    public T? GetTokenizer<T>()
         where T : Tokenizer
     {
-        return (T) _tokenizers.FirstOrDefault(tokenizer => tokenizer is T);
+        return (T?) _tokenizers.FirstOrDefault(tokenizer => tokenizer is T);
     }
 
     /// <summary>
@@ -59,19 +81,17 @@ public sealed class LexicalParser : IDisposable
     /// </summary>
     /// <returns>The next token that was parsed, or <c>null</c>, if there are no more
     /// tokens.</returns>
-    public Token GetNextToken()
+    public Token? GetNextToken()
     {
         EnsureNotDisposed();
 
-        Token token;
-
         if (_returnedTokens.Count > 0)
         {
-            token = _returnedTokens.Last();
+            Token buffered = _returnedTokens.Last();
 
             _returnedTokens.RemoveLast();
 
-            return token;
+            return buffered;
         }
 
         if (_source == null)
@@ -79,7 +99,10 @@ public sealed class LexicalParser : IDisposable
 
         char ch;
 
-        do
+        // Note that Tokenizer.ParseToken() never returns null; it throws instead.  So, a
+        // tokenizer that doesn't report its tokens (e.g., whitespace, comments) always
+        // causes us to loop around and look for the next reportable token.
+        while (true)
         {
             int data = GetNextChar();
 
@@ -91,17 +114,17 @@ public sealed class LexicalParser : IDisposable
 
             ch = (char) data;
 
-            Tokenizer tokenizer = _tokenizers
+            Tokenizer? tokenizer = _tokenizers
                 .FirstOrDefault(t => t.StartsAToken(ch));
 
             if (tokenizer == null)
                 break;
 
-            token = tokenizer.ParseToken(ch, _line, _column);
+            Token token = tokenizer.ParseToken(ch, _line, _column);
 
             if (tokenizer.ReportTokens)
                 return token;
-        } while (token != null);
+        }
 
         throw new TokenException($"The character, '{ch}', is not recognized by any tokenizer.")
         {
@@ -157,11 +180,11 @@ public sealed class LexicalParser : IDisposable
     /// <param name="msgSource">The source for the message to use for the token missing
     /// exception.</param>
     /// <returns>The next token.</returns>
-    public Token GetRequiredToken(Func<string> msgSource = null)
+    public Token GetRequiredToken(Func<string>? msgSource = null)
     {
         EnsureNotDisposed();
 
-        Token result = GetNextToken();
+        Token? result = GetNextToken();
 
         if (result == null)
         {
@@ -179,11 +202,11 @@ public sealed class LexicalParser : IDisposable
     /// This is a helper method for taking a peek at the next token from the parser.
     /// </summary>
     /// <returns>The next token.</returns>
-    public Token PeekNextToken()
+    public Token? PeekNextToken()
     {
         EnsureNotDisposed();
 
-        Token token = GetNextToken();
+        Token? token = GetNextToken();
 
         ReturnToken(token);
 
@@ -211,11 +234,11 @@ public sealed class LexicalParser : IDisposable
     /// <param name="msgSource">An optional source for the "no tokens match" message.</param>
     /// <param name="tokens">The tokens to compare against.</param>
     /// <returns>The token just verified.</returns>
-    public Token MatchToken(bool isRequired, Func<string> msgSource = null, params Token[] tokens)
+    public Token MatchToken(bool isRequired, Func<string>? msgSource = null, params Token[] tokens)
     {
         EnsureNotDisposed();
 
-        Token token = isRequired ? GetRequiredToken(msgSource) : GetNextToken();
+        Token? token = isRequired ? GetRequiredToken(msgSource) : GetNextToken();
 
         if (IsNext(token, tokens))
             return token;
@@ -250,12 +273,12 @@ public sealed class LexicalParser : IDisposable
     /// <param name="token">The token to look for.</param>
     /// <param name="tokens">The tokens to try to match.</param>
     /// <returns><c>true</c>, if the given token matches one of the specified tokens.</returns>
-    private static bool IsNext(Token token, params Token[] tokens)
+    private static bool IsNext([NotNullWhen(true)] Token? token, params Token[] tokens)
     {
         if (tokens == null || tokens.Length == 0)
             throw new ArgumentException($"No tokens provided to check.");
 
-        return tokens.Any(next => next.Matches(token));
+        return token != null && tokens.Any(next => next.Matches(token));
     }
 
     /// <summary>
@@ -266,14 +289,14 @@ public sealed class LexicalParser : IDisposable
     /// <param name="msgSource">An optional source for the "no token types match" message.</param>
     /// <param name="types">The token types to compare against.</param>
     /// <returns>The token just verified.</returns>
-    public Token MatchTokenType(bool isRequired, Func<string> msgSource, params Type[] types)
+    public Token MatchTokenType(bool isRequired, Func<string>? msgSource, params Type[] types)
     {
         EnsureNotDisposed();
 
         if (!types.All(type => typeof(Token).IsAssignableFrom(type)))
             throw new ArgumentException($"Not all specified types are Token subclasses.");
 
-        Token token = isRequired ? GetRequiredToken(msgSource) : GetNextToken();
+        Token? token = isRequired ? GetRequiredToken(msgSource) : GetNextToken();
 
         if (IsNextOfType(token, types))
             return token;
@@ -309,7 +332,7 @@ public sealed class LexicalParser : IDisposable
     /// <param name="token">The token to check.</param>
     /// <param name="types">The types to try to match.</param>
     /// <returns><c>true</c>, if the given token type matches one of the specified types.</returns>
-    private static bool IsNextOfType(Token token, params Type[] types)
+    private static bool IsNextOfType([NotNullWhen(true)] Token? token, params Type[] types)
     {
         if (types == null || types.Length == 0)
             throw new ArgumentException($"No token types provided to check.");
@@ -323,7 +346,7 @@ public sealed class LexicalParser : IDisposable
     /// responsibility to ensure proper ordering when the tokens are re-read.
     /// </summary>
     /// <param name="token">The token to return to the parser.</param>
-    public void ReturnToken(Token token)
+    public void ReturnToken(Token? token)
     {
         EnsureNotDisposed();
 
@@ -337,7 +360,7 @@ public sealed class LexicalParser : IDisposable
     /// To return them properly, this method reverses that order.
     /// </summary>
     /// <param name="tokens">The tokens to return.</param>
-    public void ReturnTokens(IEnumerable<Token> tokens)
+    public void ReturnTokens(IEnumerable<Token>? tokens)
     {
         EnsureNotDisposed();
 

@@ -18,7 +18,7 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleStandardCommentsClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(CommentTokenizer), usedTypes, tokens);
 
@@ -40,7 +40,7 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleCommentsClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
         EnsureFirstTime(typeof(CommentTokenizer), usedTypes, tokens);
 
@@ -61,11 +61,11 @@ public static partial class LexicalParserFactory
     /// <param name="tokenizer">The tokenizer to add markers to.</param>
     private static void AddCommentMarkers(List<Token> tokens, CommentTokenizer tokenizer)
     {
-        string starter = tokens.RemoveFirst().Text;
+        string starter = tokens.RemoveFirst()!.Text;
 
         tokens.RemoveFirst();
 
-        Token enderToken = tokens.RemoveFirst();
+        Token? enderToken = tokens.RemoveFirst();
 
         if (enderToken is StringToken stringToken)
             tokenizer.AddMarkers(starter, stringToken.Text);

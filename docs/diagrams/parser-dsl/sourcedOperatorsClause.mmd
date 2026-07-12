@@ -1,0 +1,7 @@
+railroad-ebnf-beta
+title "Sourced operators clause"
+
+sourcedOperatorsClause = ( "predefined" | "dsl" ) "operators" operatorsOrKeywordsModifierClause reportClause ;
+operatorsOrKeywordsModifierClause = [ ( "including" | "excluding" ) stringIdOrKeywordListClause ] ;
+stringIdOrKeywordListClause = ( string | identifier | keyword ) { "," ( string | identifier | keyword ) } ;
+reportClause = [ "report" | "redact" ] ;

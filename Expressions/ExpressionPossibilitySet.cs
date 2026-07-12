@@ -17,7 +17,7 @@ public class ExpressionPossibilitySet
     /// </summary>
     public bool IsEmpty => _choices == null;
 
-    private SwitchClauseParser _choices;
+    private SwitchClauseParser? _choices;
 
     /// <summary>
     /// This method is used to add a choice to the possibility set.
@@ -76,7 +76,7 @@ public class ExpressionPossibilitySet
     /// </summary>
     /// <param name="parser">The parser to read from.</param>
     /// <returns>The parsed match or <c>null</c>.</returns>
-    internal Clause TryParse(LexicalParser parser)
+    internal Clause? TryParse(LexicalParser parser)
     {
         if (_choices == null)
             throw new Exception("Empty possibility set will not match anything.");

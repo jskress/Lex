@@ -18,19 +18,19 @@ public class ClauseParserDebugInfo
     /// This property holds the clause that was produced.  If no clause could be captured,
     /// this will be <c>null</c>.
     /// </summary>
-    public Clause Clause { get; }
+    public Clause? Clause { get; }
 
     /// <summary>
     /// This property holds the first token that could not be captured.  It will be present
-    /// only if <see cref="Clause"/> is not <c>null.</c>.
+    /// only if <see cref="Clause"/> is <c>null</c>.
     /// </summary>
-    public Token Token { get; }
+    public Token? Token { get; }
 
-    internal ClauseParserDebugInfo(LexicalParser parser, Clause clause, string name)
+    internal ClauseParserDebugInfo(LexicalParser parser, Clause? clause, string name)
     {
         ClauseParserName = name;
         Clause = clause;
-        Token = clause == null ? null : parser.PeekNextToken();
+        Token = clause == null ? parser.PeekNextToken() : null;
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ public class ClauseParserDebugInfo
         string content = Clause == null
             ? $"rejected token {Token}"
             : "captured [" + string.Join(", ", Clause.Tokens) + "]";
-        string tag = Clause?.Tag;
+        string? tag = Clause?.Tag;
 
         tag = tag == null ? string.Empty : $", tagged with '{tag}'";
 

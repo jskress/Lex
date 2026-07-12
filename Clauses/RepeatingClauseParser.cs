@@ -19,9 +19,9 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
     private readonly ClauseParser _wrapped;
     private readonly int _min;
     private readonly int? _max;
-    private readonly string _errorMessage;
+    private readonly string? _errorMessage;
 
-    public RepeatingClauseParser(ClauseParser wrapped, int min = 0, int? max = null, string errorMessage = null)
+    public RepeatingClauseParser(ClauseParser wrapped, int min = 0, int? max = null, string? errorMessage = null)
     {
         ArgumentNullException.ThrowIfNull(wrapped, nameof(wrapped));
 
@@ -43,11 +43,11 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
     /// </summary>
     /// <param name="parser">The parser to use.</param>
     /// <returns>The list of tokens matching the clause, or <c>null</c>, if not.</returns>
-    protected override Clause TryParseClause(LexicalParser parser)
+    protected override Clause? TryParseClause(LexicalParser parser)
     {
         List<Token> tokens = [];
         List<IExpressionTerm> expressions = [];
-        string lastMatchedTag = null;
+        string? lastMatchedTag = null;
         int count = 0;
 
         while (true)
@@ -55,10 +55,22 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
             if (_wrapped is ExpressionClauseParser expressionClauseParser)
                 expressionClauseParser.SetIsOptional(expressions.Count >= _min);
 
-            Clause wrappedResult = _wrapped.TryParse(parser);
+            Token? before = parser.PeekNextToken();
+            Clause? wrappedResult = _wrapped.TryParse(parser);
 
             if (wrappedResult != null)
             {
+                // A clause parser that reports a match without consuming any input would
+                // cause us to loop forever (or, for a bounded repeat, silently duplicate a
+                // phantom match).  Either way, that's a bug in the wrapped clause parser, so
+                // fail loudly and immediately instead.
+                if (ReferenceEquals(before, parser.PeekNextToken()))
+                {
+                    throw new Exception(
+                        $"The wrapped {_wrapped.GetType().Name} matched without consuming " +
+                        "any input; this would result in an infinite loop.");
+                }
+
                 tokens.AddRange(wrappedResult.Tokens);
                 expressions.AddRange(wrappedResult.Expressions);
 

@@ -27,9 +27,9 @@ will be specifications of all the clause parsers you need.  The syntax of the wh
 specification looks like this:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/top-level-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/top-level.png">
-  <img alt="Top level DSL factory DSL" src="images/dsl-dsl/top-level.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/top-level-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/top-level.svg">
+  <img alt="Top level DSL factory DSL" src="images/dsl-dsl/top-level.svg">
 </picture>
 
 You may specify one, and only one, switch clause without a leading label that will act as
@@ -44,9 +44,9 @@ parser that is able to parse the given language.  If you want to do this, includ
 specification clause in the specification of your DSL.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/parserSpecificationClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/parserSpecificationClause.png">
-  <img alt="Lexical parser specification" src="images/dsl-dsl/parserSpecificationClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/parserSpecificationClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/parserSpecificationClause.svg">
+  <img alt="Lexical parser specification" src="images/dsl-dsl/parserSpecificationClause.svg">
 </picture>
 
 The specification is a simple string that defines the tokenizers for the parser using the
@@ -82,9 +82,9 @@ There are actually two different ways to specify keywords.  The first is by spec
 of your keywords, must follow the colon, `:`, that follows `_keywords`.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/keywordsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/keywordsClause.png">
-  <img alt="Defining keywords" src="images/dsl-dsl/keywordsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/keywordsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/keywordsClause.svg">
+  <img alt="Defining keywords" src="images/dsl-dsl/keywordsClause.svg">
 </picture>
 
 Each string specified in the list must contain letters only.
@@ -100,9 +100,9 @@ of which represents an operator to include in the DSL, must follow the colon, `:
 follows `_operators`.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/operatorsClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/operatorsClause.png">
-  <img alt="Defining operators" src="images/dsl-dsl/operatorsClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/operatorsClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/operatorsClause.svg">
+  <img alt="Defining operators" src="images/dsl-dsl/operatorsClause.svg">
 </picture>
 
 Each identifier in the comma-delimited list may be,
@@ -126,9 +126,9 @@ the arbitrary token clause.  It is made up of a label (an identifier followed by
 a colon, `:`), then a type and a string surrounded by parentheses.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/arbitraryTokenClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/arbitraryTokenClause.png">
-  <img alt="Defining arbitrary tokens" src="images/dsl-dsl/arbitraryTokenClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/arbitraryTokenClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/arbitraryTokenClause.svg">
+  <img alt="Defining arbitrary tokens" src="images/dsl-dsl/arbitraryTokenClause.svg">
 </picture>
 
 For example, to define a square operator using the Unicode character for a superscripted
@@ -168,9 +168,9 @@ You define what an expression looks like in your DSL by providing an expression 
 specification after the `_expressions:` label.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/expressionClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/expressionClause.png">
-  <img alt="Defining the form of an expression" src="images/dsl-dsl/expressionClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/expressionClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/expressionClause.svg">
+  <img alt="Defining the form of an expression" src="images/dsl-dsl/expressionClause.svg">
 </picture>
 
 In the expression specification clause, you'll define what terms can look like, what
@@ -185,9 +185,9 @@ list of expression term definition specifications between square brackets after 
 `term:` label inside the `_expressions:` specification.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/expressionTerm-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/expressionTerm.png">
-  <img alt="Defining an expression term" src="images/dsl-dsl/expressionTerm.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/expressionTerm-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/expressionTerm.svg">
+  <img alt="Defining an expression term" src="images/dsl-dsl/expressionTerm.svg">
 </picture>
 
 Each form of a term must be composed of a series of one or more items, each of which
@@ -238,9 +238,9 @@ unary operation definitions between square brackets after the `unary:` label ins
 `_expressions:` specification.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/unaryTerm-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/unaryTerm.png">
-  <img alt="Defining unary operations" src="images/dsl-dsl/unaryTerm.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/unaryTerm-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/unaryTerm.svg">
+  <img alt="Defining unary operations" src="images/dsl-dsl/unaryTerm.svg">
 </picture>
 
 Each unary operation must be composed of a series of one or more tokens or a colon followed
@@ -260,9 +260,9 @@ binary operation definitions between square brackets after the `binary:` label i
 `_expressions:` specification.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/binaryTerm-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/binaryTerm.png">
-  <img alt="Defining binary operations" src="images/dsl-dsl/binaryTerm.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/binaryTerm-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/binaryTerm.svg">
+  <img alt="Defining binary operations" src="images/dsl-dsl/binaryTerm.svg">
 </picture>
 
 Each binary operation must be composed of a series of one or more tokens followed by an
@@ -279,9 +279,9 @@ binary operation definitions between square brackets after the `trinary:` label 
 `_expressions:` specification.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/trinaryTerm-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/trinaryTerm.png">
-  <img alt="Defining trinary operations" src="images/dsl-dsl/trinaryTerm.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/trinaryTerm-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/trinaryTerm.svg">
+  <img alt="Defining trinary operations" src="images/dsl-dsl/trinaryTerm.svg">
 </picture>
 
 Each trinary operation must be composed of a pair of one or more tokens separated by a
@@ -298,9 +298,9 @@ that it runs across.  You do so by providing a comma-delimited list of message s
 brackets after the `messages:` label inside the `_expressions:` specification.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/messages-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/messages.png">
-  <img alt="Defining trinary operations" src="images/dsl-dsl/messages.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/messages-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/messages.svg">
+  <img alt="Defining trinary operations" src="images/dsl-dsl/messages.svg">
 </picture>
 
 Each message specification must be composed of the symbolic name of the message, followed
@@ -317,9 +317,9 @@ and then the sequential clause itself.  This may optionally be followed by the d
 operator, `=>`, and a string.  Finally, a [repetition clause](#the-repetition-clause) may be given.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/defineSequentialClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/defineSequentialClause.png">
-  <img alt="Defining a sequential clause" src="images/dsl-dsl/defineSequentialClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/defineSequentialClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/defineSequentialClause.svg">
+  <img alt="Defining a sequential clause" src="images/dsl-dsl/defineSequentialClause.svg">
 </picture>
 
 If the double arrow clause is provided, the string will contain the tag that the sequential
@@ -337,9 +337,9 @@ separated by the greater-than sign, `>`.  The clause must be ended with a closin
 `}`.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/sequentialClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/sequentialClause.png">
-  <img alt="Defining a sequential clause" src="images/dsl-dsl/sequentialClause-dark.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/sequentialClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/sequentialClause.svg">
+  <img alt="Defining a sequential clause" src="images/dsl-dsl/sequentialClause-dark.svg">
 </picture>
 
 ### Defining a Switch Clause
@@ -350,9 +350,9 @@ and then the switch clause itself.  This may optionally be followed by the coale
 `??`, and a string.  Finally, a [repetition clause](#the-repetition-clause) may be given.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/defineSwitchClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/defineSwitchClause.png">
-  <img alt="Defining a sequential clause" src="images/dsl-dsl/defineSwitchClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/defineSwitchClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/defineSwitchClause.svg">
+  <img alt="Defining a sequential clause" src="images/dsl-dsl/defineSwitchClause.svg">
 </picture>
 
 If the coalesce clause is provided, the string will contain the text of an error message to
@@ -374,9 +374,9 @@ bracket,
 `]`.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/switchClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/switchClause.png">
-  <img alt="Defining a sequential clause" src="images/dsl-dsl/switchClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/switchClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/switchClause.svg">
+  <img alt="Defining a sequential clause" src="images/dsl-dsl/switchClause.svg">
 </picture>
 
 ### The Term Clause
@@ -395,9 +395,9 @@ of five things:
 - A nested switch clause.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/term-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/term.png">
-  <img alt="Defining a sequential clause" src="images/dsl-dsl/term.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/term-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/term.svg">
+  <img alt="Defining a sequential clause" src="images/dsl-dsl/term.svg">
 </picture>
 
 When the term is an expression, it is important to know that, at that point, any terms
@@ -419,9 +419,9 @@ You can put limits on how many times a clause is allowed or required to repeat b
 repetition clause where appropriate.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/repetitionClause-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/repetitionClause.png">
-  <img alt="Defining a sequential clause" src="images/dsl-dsl/repetitionClause.png">
+  <source media="(prefers-color-scheme: dark)" srcset="images/dsl-dsl/repetitionClause-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/dsl-dsl/repetitionClause.svg">
+  <img alt="Defining a sequential clause" src="images/dsl-dsl/repetitionClause.svg">
 </picture>
 
 In the number form of the clause, both numbers are optional.  The number that precedes

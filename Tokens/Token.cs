@@ -31,7 +31,7 @@ public class Token
         if (!typeof(Token).IsAssignableFrom(type))
             throw new ArgumentException("Cannot describe types that are not token types.");
 
-        if (TokenTypeDescriptions.TryGetValue(type.TypeHandle, out string noun))
+        if (TokenTypeDescriptions.TryGetValue(type.TypeHandle, out string? noun))
             return noun;
 
         string name = type.Name.ToLowerInvariant();
@@ -86,7 +86,7 @@ public class Token
     /// </summary>
     /// <param name="theOther">The other token to test for equality with.</param>
     /// <returns><c>true</c> if the given token matches this one or <c>false</c> if not.</returns>
-    public bool Matches(Token theOther)
+    public bool Matches(Token? theOther)
     {
         if (theOther == null)
             return false;

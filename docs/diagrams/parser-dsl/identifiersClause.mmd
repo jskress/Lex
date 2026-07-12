@@ -1,0 +1,9 @@
+railroad-ebnf-beta
+title "Identifiers clause"
+
+identifiersClause = "identifiers" [ "starting" "with" stringOrKeywordListClause ]
+                     [ "containing" stringOrKeywordListClause ]
+                     letterCaseStyleClause reportClause ;
+stringOrKeywordListClause = ( string | keyword ) { "," ( string | keyword ) } ;
+letterCaseStyleClause = [ "lowerCase" | "upperCase" | "asIs" ] ;
+reportClause = [ "report" | "redact" ] ;

@@ -1,0 +1,6 @@
+railroad-ebnf-beta
+title "Defining arbitrary tokens"
+
+arbitraryTokenClause = identifier ":" tokenType "(" string ")" ;
+tokenType = "_bounder" | "_comment" | "_identifier" | "_keyword"
+          | "_number" | "_operator" | "_string" | "_whitespace" ;

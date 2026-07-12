@@ -58,10 +58,10 @@ public class ExpressionParser
     private readonly Dictionary<ExpressionParseMessageTypes, string> _messages = new (DefaultMessageMap);
 
     private IExpressionTreeBuilder _treeBuilder = new DefaultTreeBuilder();
-    private ExpressionPossibilitySet _prefixOperators;
-    private ExpressionPossibilitySet _postfixOperators;
-    private List<MultiTermOperator> _binaryOperators;
-    private List<MultiTermOperator> _trinaryOperators;
+    private ExpressionPossibilitySet? _prefixOperators;
+    private ExpressionPossibilitySet? _postfixOperators;
+    private List<MultiTermOperator>? _binaryOperators;
+    private List<MultiTermOperator>? _trinaryOperators;
 
     /// <summary>
     /// This method is used to add an option on what a term in an expression can look like.
@@ -176,7 +176,8 @@ public class ExpressionParser
         if (_termChoiceParsers.Count == 0)
             throw new Exception("No term formats have been included in the expression parser.");
 
-        return ParseExpressionTerm(parser);
+        // With the default of optional: false, this is guaranteed to never return null.
+        return ParseExpressionTerm(parser)!;
     }
 
     /// <summary>
@@ -186,9 +187,9 @@ public class ExpressionParser
     /// <param name="parser">The parser to read from.</param>
     /// <param name="optional">A flag noting whether the term is optional or not.</param>
     /// <returns>The parsed expression as a term.</returns>
-    internal IExpressionTerm ParseExpressionTerm(LexicalParser parser, bool optional = false)
+    internal IExpressionTerm? ParseExpressionTerm(LexicalParser parser, bool optional = false)
     {
-        IExpressionTerm term = ParseBinaryTerm(parser, optional);
+        IExpressionTerm? term = ParseBinaryTerm(parser, optional);
 
         if (term == null)
             return null;
@@ -196,13 +197,15 @@ public class ExpressionParser
         if (_trinaryOperators == null)
             return term;
 
-        Operator leftOperator = ParseOperator(parser, _trinaryOperators);
+        Operator? leftOperator = ParseOperator(parser, _trinaryOperators);
 
         if (leftOperator != null)
         {
             IExpressionTerm left = term;
-            IExpressionTerm middle = ParseExpressionTerm(parser);
-            Clause rightOperator = leftOperator.MultiTermOperator.Operator2.TryParse(parser);
+            // These recursive calls use the default of optional: false, so they are
+            // guaranteed to never return null.
+            IExpressionTerm middle = ParseExpressionTerm(parser)!;
+            Clause? rightOperator = leftOperator.MultiTermOperator.Operator2!.TryParse(parser);
 
             if (rightOperator == null)
             {
@@ -214,7 +217,7 @@ public class ExpressionParser
                 };
             }
 
-            IExpressionTerm right = ParseExpressionTerm(parser);
+            IExpressionTerm right = ParseExpressionTerm(parser)!;
 
             term = _treeBuilder.CreateTrinaryOperation(
                 leftOperator.Clause.Tokens, rightOperator.Tokens, left, middle, right);
@@ -231,9 +234,9 @@ public class ExpressionParser
     /// <param name="parser">The parser to read from.</param>
     /// <param name="optional">A flag noting whether the term is optional or not.</param>
     /// <returns>The parsed expression as a term.</returns>
-    private IExpressionTerm ParseBinaryTerm(LexicalParser parser, bool optional)
+    private IExpressionTerm? ParseBinaryTerm(LexicalParser parser, bool optional)
     {
-        IExpressionTerm term = ParseUnaryTerm(parser, optional);
+        IExpressionTerm? term = ParseUnaryTerm(parser, optional);
 
         if (term == null)
             return null;
@@ -241,21 +244,22 @@ public class ExpressionParser
         if (_binaryOperators == null)
             return term;
 
-        Operator op = ParseOperator(parser, _binaryOperators);
+        Operator? op = ParseOperator(parser, _binaryOperators);
 
         if (op != null)
         {
             List<IExpressionTerm> terms = [term];
             List<Operator> operators = [op];
 
-            terms.Add(ParseUnaryTerm(parser, false));
+            // These calls use optional: false, so they are guaranteed to never return null.
+            terms.Add(ParseUnaryTerm(parser, false)!);
 
             op = ParseOperator(parser, _binaryOperators);
 
             while (op != null)
             {
                 operators.Add(op);
-                terms.Add(ParseUnaryTerm(parser, false));
+                terms.Add(ParseUnaryTerm(parser, false)!);
 
                 TryToReduce(terms, operators);
 
@@ -312,7 +316,7 @@ public class ExpressionParser
     /// <param name="parser">The parser to read from.</param>
     /// <param name="optional">A flag noting whether the term is optional or not.</param>
     /// <returns>The parsed expression as a term.</returns>
-    private IExpressionTerm ParseUnaryTerm(LexicalParser parser, bool optional)
+    private IExpressionTerm? ParseUnaryTerm(LexicalParser parser, bool optional)
     {
         // 1. Queue up any prefix operators.
         List<Clause> prefixClauses = GatherUnaryOperators(parser, _prefixOperators);
@@ -322,7 +326,7 @@ public class ExpressionParser
             optional = false;
 
         // 2. Now, parse the term itself.
-        IExpressionTerm term = parser.IsNext(BounderToken.LeftParen)
+        IExpressionTerm? term = parser.IsNext(BounderToken.LeftParen)
             ? ParseParentheticalExpression(parser)
             : ParseFundamentalTerm(parser, optional);
 
@@ -355,10 +359,13 @@ public class ExpressionParser
     /// <param name="parser">The parser to read from.</param>
     /// <param name="set">The unary operator collection to use.</param>
     /// <returns>A list of any operator clauses we found.</returns>
-    private static List<Clause> GatherUnaryOperators(LexicalParser parser, ExpressionPossibilitySet set)
+    private static List<Clause> GatherUnaryOperators(LexicalParser parser, ExpressionPossibilitySet? set)
     {
+        if (set == null)
+            return [];
+
         List<Clause> result = [];
-        Clause clause = set?.TryParse(parser);
+        Clause? clause = set.TryParse(parser);
 
         while (clause != null)
         {
@@ -402,7 +409,8 @@ public class ExpressionParser
     {
         _ = parser.GetNextToken(); // Eat the left parenthesis.
 
-        IExpressionTerm term = ParseExpressionTerm(parser);
+        // This uses optional: false, so it is guaranteed to never return null.
+        IExpressionTerm term = ParseExpressionTerm(parser)!;
 
         _ = parser.MatchToken(
             true,
@@ -418,9 +426,9 @@ public class ExpressionParser
     /// <param name="parser">The parser to read from.</param>
     /// <param name="optional">A flag noting whether the term is optional or not.</param>
     /// <returns>The Basic term we found.</returns>
-    private IExpressionTerm ParseFundamentalTerm(LexicalParser parser, bool optional)
+    private IExpressionTerm? ParseFundamentalTerm(LexicalParser parser, bool optional)
     {
-        Token token = parser.PeekNextToken();
+        Token? token = parser.PeekNextToken();
 
         foreach (var term in _termChoiceParsers
                      .Select(termChoiceParser => termChoiceParser.TryParse(this, parser))
@@ -444,11 +452,11 @@ public class ExpressionParser
     /// <param name="parser">The parser to read from.</param>
     /// <param name="operators">The list of operators to check for.</param>
     /// <returns>The parsed operator or <c>null</c>.</returns>
-    private static Operator ParseOperator(LexicalParser parser, List<MultiTermOperator> operators)
+    private static Operator? ParseOperator(LexicalParser parser, List<MultiTermOperator> operators)
     {
         foreach (MultiTermOperator op in operators)
         {
-            Clause clause = op.Operator1.TryParse(parser);
+            Clause? clause = op.Operator1.TryParse(parser);
 
             if (clause != null)
                 return new Operator(op, clause);

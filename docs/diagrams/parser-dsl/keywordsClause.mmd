@@ -1,0 +1,7 @@
+railroad-ebnf-beta
+title "Keywords clause"
+
+keywordsClause = "keywords" stringIdOrKeywordListClause letterCaseStyleClause reportClause ;
+stringIdOrKeywordListClause = ( string | identifier | keyword ) { "," ( string | identifier | keyword ) } ;
+letterCaseStyleClause = [ "lowerCase" | "upperCase" | "asIs" ] ;
+reportClause = [ "report" | "redact" ] ;

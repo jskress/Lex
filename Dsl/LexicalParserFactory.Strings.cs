@@ -18,9 +18,9 @@ public static partial class LexicalParserFactory
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     /// <returns>The created and configured tokenizer.</returns>
     private static Tokenizer HandleStringsClause(
-        List<Token> tokens, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        List<Token> tokens, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
-        string text = tokens.GetTokenText();
+        string? text = tokens.GetTokenText();
         Type type = text switch
         {
             "single" => typeof(SingleQuotedStringTokenizer),
@@ -123,7 +123,8 @@ public static partial class LexicalParserFactory
     private static (StringTokenizer, int) CreateStringTokenizer(
         LexicalParser parser, List<Token> tokens)
     {
-        StringTokenizer tokenizer = new StringTokenizer(parser, tokens.GetTokenText(3));
+        // A _string token is required at this position by the "bounded by" grammar clause.
+        StringTokenizer tokenizer = new StringTokenizer(parser, tokens.GetTokenText(3)!);
         int count = 4;
 
         if (tokens.GetTokenText(count) == "multiLine")

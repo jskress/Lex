@@ -61,7 +61,7 @@ public class IdTokenizer : Tokenizer
     private readonly string _starters;
     private readonly string _members;
 
-    public IdTokenizer(LexicalParser parser, string starters = null, string members = null) : base(parser)
+    public IdTokenizer(LexicalParser parser, string? starters = null, string? members = null) : base(parser)
     {
         _starters = starters ?? DefaultStarters;
         _members = members ?? DefaultMembers;

@@ -10,7 +10,7 @@ namespace Lex.Dsl;
 /// </summary>
 public static partial class LexicalParserFactory
 {
-    private static readonly Dictionary<string, Func<List<Token>, Dsl, LexicalParser, ISet<string>, Tokenizer>>
+    private static readonly Dictionary<string, Func<List<Token>, Dsl?, LexicalParser, ISet<string>, Tokenizer>>
         TagHandlers = new ()
         {
             { nameof(HandleWhitespaceClause), HandleWhitespaceClause },
@@ -35,7 +35,7 @@ public static partial class LexicalParserFactory
     /// <param name="parserSpec">The specification for the parser to parse it.</param>
     /// <param name="dsl">An optional DSL object to pull information from.</param>
     /// <returns>The prepared DSL.</returns>
-    public static LexicalParser CreateFrom(string parserSpec, Dsl dsl = null)
+    public static LexicalParser CreateFrom(string parserSpec, Dsl? dsl = null)
     {
         HashSet<string> usedTypes = [];
         LexicalParser result = new ();
@@ -43,7 +43,11 @@ public static partial class LexicalParserFactory
         using LexicalParser parser = CreateAndConfigureParser(parserSpec);
 
         while (!parser.IsAtEnd())
-            ProcessNextClause(ParserDsl.ParseNextClause(parser), dsl, result, usedTypes);
+        {
+            // The top-level clause always either matches or throws (it carries an
+            // "on no clauses matched" error message), so this is never null.
+            ProcessNextClause(ParserDsl.ParseNextClause(parser)!, dsl, result, usedTypes);
+        }
 
         return result;
     }
@@ -86,9 +90,11 @@ public static partial class LexicalParserFactory
     /// <param name="parser">The parser we are configuring.</param>
     /// <param name="usedTypes">The set of already used tokenizer types.</param>
     private static void ProcessNextClause(
-        Clause clause, Dsl dsl, LexicalParser parser, ISet<string> usedTypes)
+        Clause clause, Dsl? dsl, LexicalParser parser, ISet<string> usedTypes)
     {
-        if (TagHandlers.TryGetValue(clause.Tag, out Func<List<Token>, Dsl, LexicalParser, ISet<string>, Tokenizer> handler))
+        // Every alternative in the top-level clause carries an explicit tag, so a
+        // successfully parsed clause is always tagged.
+        if (TagHandlers.TryGetValue(clause.Tag!, out Func<List<Token>, Dsl?, LexicalParser, ISet<string>, Tokenizer>? handler))
         {
             List<Token> tokens = [..clause.Tokens];
             Tokenizer tokenizer = handler.Invoke(tokens, dsl, parser, usedTypes);
@@ -107,9 +113,9 @@ public static partial class LexicalParserFactory
     /// <param name="tokens">The list of tokens for the tokenizer to add.</param>
     private static void EnsureFirstTime(Type type, ISet<string> usedTypes, IEnumerable<Token> tokens)
     {
-        string typeName = type.FullName;
+        string typeName = type.FullName!;
 
-        if (!usedTypes.Add(typeName!))
+        if (!usedTypes.Add(typeName))
         {
             string message = $"A tokenizer of type {typeName} has already been added to the parser.";
 
@@ -125,13 +131,13 @@ public static partial class LexicalParserFactory
     /// <returns>The resulting list of strings.</returns>
     private static List<Token> GetStringOrIdList(List<Token> tokens)
     {
-        List<Token> result = [tokens.RemoveFirst()];
+        List<Token> result = [tokens.RemoveFirst()!];
 
         while (OperatorToken.Comma.Matches(tokens.FirstOrDefault()))
         {
             tokens.RemoveFirst();
 
-            result.Add(tokens.RemoveFirst());
+            result.Add(tokens.RemoveFirst()!);
         }
 
         return result;

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Lex.Tokenizers;
 
 /// <summary>
@@ -32,7 +34,8 @@ internal static class IdStyleExtensions
     /// <param name="style">The style to apply.</param>
     /// <param name="text">The text to apply it to.</param>
     /// <returns>The text with the style applied.</returns>
-    internal static string Apply(this LetterCaseStyle style, string text)
+    [return: NotNullIfNotNull(nameof(text))]
+    internal static string? Apply(this LetterCaseStyle style, string? text)
     {
         if (text == null)
             return null;

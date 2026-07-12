@@ -19,7 +19,7 @@ public abstract class Tokenizer
     /// <param name="text">The text to normalize.</param>
     /// <param name="noun">The noun to use for errors.</param>
     /// <returns></returns>
-    protected static string Normalize(string text, string noun)
+    protected static string Normalize(string? text, string noun)
     {
         text = text?.Trim() ?? string.Empty;
 

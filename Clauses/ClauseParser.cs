@@ -75,7 +75,7 @@ public abstract class ClauseParser
     /// </summary>
     /// <param name="consumer">The new consumer for debugging information.</param>
     /// <returns>This object, for fluency.</returns>
-    public ClauseParser SetDebugConsumer(Action<ClauseParserDebugInfo> consumer)
+    public ClauseParser SetDebugConsumer(Action<ClauseParserDebugInfo>? consumer)
     {
         consumer ??= DefaultDebuggingConsumer;
 
@@ -88,13 +88,17 @@ public abstract class ClauseParser
     }
 
     /// <summary>
-    /// Subclasses must provide this method to try to parse themselves.
+    /// This method tries to match this clause parser against what's next in the given
+    /// lexical parser.  Per the contract established by <see cref="TryParseClause"/>, this
+    /// will only ever return <c>null</c> when nothing was matched (and, therefore, nothing
+    /// was consumed from <paramref name="parser"/>); it will never return a non-<c>null</c>
+    /// <see cref="Clause"/> that represents a zero-width (nothing consumed) match.
     /// </summary>
     /// <param name="parser">The parser to use.</param>
     /// <returns>The list of tokens matching the clause, or <c>null</c>, if not.</returns>
-    public Clause TryParse(LexicalParser parser)
+    public Clause? TryParse(LexicalParser parser)
     {
-        Clause clause = TryParseClause(parser);
+        Clause? clause = TryParseClause(parser);
 
         if (IsDebugging)
         {
@@ -109,7 +113,20 @@ public abstract class ClauseParser
     /// <summary>
     /// Subclasses must provide this method to try to parse themselves.
     /// </summary>
+    /// <remarks>
+    /// Implementations must return <c>null</c> (rather than throwing) whenever the clause
+    /// does not match what's next in <paramref name="parser"/> and the failure to match is
+    /// not, itself, a hard error (i.e., no required token or sub-clause was configured with
+    /// an error message that applies).  Any tokens that were speculatively consumed while
+    /// attempting the match must be returned to <paramref name="parser"/> (see
+    /// <see cref="LexicalParser.ReturnToken"/>/<see cref="LexicalParser.ReturnTokens"/>)
+    /// before returning <c>null</c>, so that a caller trying a different alternative sees
+    /// the parser's position unchanged.  Conversely, a non-<c>null</c> result must always
+    /// represent real, forward progress: it must never report a "match" that consumed
+    /// nothing, since parsers such as <see cref="RepeatingClauseParser"/> rely on that
+    /// guarantee to avoid looping forever.
+    /// </remarks>
     /// <param name="parser">The parser to use.</param>
     /// <returns>The list of tokens matching the clause, or <c>null</c>, if not.</returns>
-    protected abstract Clause TryParseClause(LexicalParser parser);
+    protected abstract Clause? TryParseClause(LexicalParser parser);
 }

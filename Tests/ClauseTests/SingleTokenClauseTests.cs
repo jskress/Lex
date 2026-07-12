@@ -1,3 +1,4 @@
+using Lex;
 using Lex.Clauses;
 using Lex.Parser;
 using Lex.Tokenizers;
@@ -8,6 +9,51 @@ namespace Tests.ClauseTests;
 [TestClass]
 public class SingleTokenClauseTests : ClauseTestsBase
 {
+    [TestMethod]
+    public void TestFailureTrackerReceivesRejectedMatches()
+    {
+        LexicalParser parser = new ();
+        SingleTokenClauseParser clauseParser = new (This, That, Other);
+        FailureTracker tracker = new ();
+
+        _ = new IdTokenizer(parser);
+        _ = new WhitespaceTokenizer(parser);
+
+        parser.SetSource("thing".AsReader());
+        parser.FailureTracker = tracker;
+
+        Clause clause = clauseParser.TryParse(parser);
+
+        Assert.IsNull(clause);
+        Assert.AreEqual(1, tracker.Line);
+        Assert.AreEqual(1, tracker.Column);
+        CollectionAssert.AreEqual(
+            new[] { "an identifier of \"this\" or an identifier of \"that\" or an identifier of \"other\"" },
+            tracker.Expectations.ToList());
+        Assert.AreEqual(
+            "Expecting an identifier of \"this\" or an identifier of \"that\" or an identifier of \"other\" here.",
+            tracker.BuildMessage());
+    }
+
+    [TestMethod]
+    public void TestFailureTrackerIsNotConsultedWhenErrorMessageIsSet()
+    {
+        LexicalParser parser = new ();
+        SingleTokenClauseParser clauseParser = new ("bad token", This, That, Other);
+        FailureTracker tracker = new ();
+
+        _ = new IdTokenizer(parser);
+        _ = new WhitespaceTokenizer(parser);
+
+        parser.SetSource("thing".AsReader());
+        parser.FailureTracker = tracker;
+
+        AssertTokenException(() => clauseParser.TryParse(parser), "bad token");
+
+        // The clause parser threw instead of reporting to the tracker.
+        Assert.AreEqual(0, tracker.Expectations.Count);
+    }
+
     [TestMethod]
     public void TestSingleTokenMatchingClause()
     {

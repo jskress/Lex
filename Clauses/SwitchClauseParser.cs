@@ -14,7 +14,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// </summary>
     /// <param name="ClauseParser">The particular sub-clause.</param>
     /// <param name="OnMatchTag">The tag, if any, to emit when the clause is matched.</param>
-    private record Entry(ClauseParser ClauseParser, string OnMatchTag);
+    private record Entry(ClauseParser ClauseParser, string? OnMatchTag);
 
     /// <summary>
     /// This property provides access to the parent's children.
@@ -23,7 +23,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
 
     private readonly List<Entry> _clauses = [];
 
-    private string _moClausesMatchedMessage;
+    private string? _noClausesMatchedMessage;
 
     /// <summary>
     /// This method is used to add a single token clause for matching against a set of
@@ -45,7 +45,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// match.</param>
     /// <param name="tokens">The list of token possibilities.</param>
     /// <returns>This object, for fluency.</returns>
-    public SwitchClauseParser Matching(string onMatchTag = null, string errorMessage = null, params Token[] tokens)
+    public SwitchClauseParser Matching(string? onMatchTag = null, string? errorMessage = null, params Token[] tokens)
     {
         return Matching(new SingleTokenClauseParser(errorMessage, tokens), onMatchTag);
     }
@@ -70,7 +70,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// match.</param>
     /// <param name="types">The list of token possibilities.</param>
     /// <returns>This object, for fluency.</returns>
-    public SwitchClauseParser Matching(string onMatchTag = null, string errorMessage = null, params Type[] types)
+    public SwitchClauseParser Matching(string? onMatchTag = null, string? errorMessage = null, params Type[] types)
     {
         return Matching(new SingleTokenClauseParser(errorMessage, types), onMatchTag);
     }
@@ -81,7 +81,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// <param name="clauseParser">The potential clause to add.</param>
     /// <param name="onMatchTag">An optional tag to emit when the clause is matched.</param>
     /// <returns>This object, for fluency.</returns>
-    public SwitchClauseParser Matching(ClauseParser clauseParser, string onMatchTag = null)
+    public SwitchClauseParser Matching(ClauseParser clauseParser, string? onMatchTag = null)
     {
         return AddClause(
             count => count > 0, "The clause has already been started.",
@@ -108,7 +108,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// match.</param>
     /// <param name="tokens">The list of token possibilities.</param>
     /// <returns>This object, for fluency.</returns>
-    public SwitchClauseParser Or(string onMatchTag = null, string errorMessage = null, params Token[] tokens)
+    public SwitchClauseParser Or(string? onMatchTag = null, string? errorMessage = null, params Token[] tokens)
     {
         return Or(new SingleTokenClauseParser(errorMessage, tokens), onMatchTag);
     }
@@ -133,7 +133,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// match.</param>
     /// <param name="types">The list of token possibilities.</param>
     /// <returns>This object, for fluency.</returns>
-    public SwitchClauseParser Or(string onMatchTag = null, string errorMessage = null, params Type[] types)
+    public SwitchClauseParser Or(string? onMatchTag = null, string? errorMessage = null, params Type[] types)
     {
         return Or(new SingleTokenClauseParser(errorMessage, types), onMatchTag);
     }
@@ -144,7 +144,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// <param name="clauseParser">The potential clause to add.</param>
     /// <param name="onMatchTag">An optional tag to emit when the clause is matched.</param>
     /// <returns>This object, for fluency.</returns>
-    public SwitchClauseParser Or(ClauseParser clauseParser, string onMatchTag = null)
+    public SwitchClauseParser Or(ClauseParser clauseParser, string? onMatchTag = null)
     {
         return AddClause(
             count => count == 0, "The clause has not been started yet.",
@@ -160,7 +160,7 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// <param name="onMatchTag">An optional tag to emit when the clause is matched.</param>
     /// <returns>This object, for fluency.</returns>
     private SwitchClauseParser AddClause(
-        Func<int, bool> gate, string gateMessage, ClauseParser clauseParser, string onMatchTag)
+        Func<int, bool> gate, string gateMessage, ClauseParser clauseParser, string? onMatchTag)
     {
         if (gate.Invoke(Children.Count))
             throw new Exception(gateMessage);
@@ -176,9 +176,9 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// </summary>
     /// <param name="errorMessage"></param>
     /// <returns></returns>
-    public SwitchClauseParser OnNoClausesMatched(string errorMessage)
+    public SwitchClauseParser OnNoClausesMatched(string? errorMessage)
     {
-        _moClausesMatchedMessage = errorMessage;
+        _noClausesMatchedMessage = errorMessage;
 
         return this;
     }
@@ -188,9 +188,9 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
     /// </summary>
     /// <param name="parser">The parser to use.</param>
     /// <returns>The list of tokens matching the clause, or <c>null</c>, if not.</returns>
-    protected override Clause TryParseClause(LexicalParser parser)
+    protected override Clause? TryParseClause(LexicalParser parser)
     {
-        (Clause parsed, string onMatchTag) = _clauses
+        (Clause? parsed, string? onMatchTag) = _clauses
             .Select(entry => (entry.ClauseParser.TryParse(parser), entry.OnMatchTag))
             .FirstOrDefault(item => item.Item1 != null);
 
@@ -204,9 +204,9 @@ public class SwitchClauseParser : ClauseParser, IClauseParserParent
             };
         }
 
-        if (_moClausesMatchedMessage != null)
+        if (_noClausesMatchedMessage != null)
         {
-            throw new TokenException(_moClausesMatchedMessage)
+            throw new TokenException(_noClausesMatchedMessage)
             {
                 Token = parser.GetNextToken()
             };

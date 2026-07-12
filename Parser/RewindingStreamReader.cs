@@ -149,9 +149,9 @@ internal class RewindingStreamReader : IDisposable
             _returnedCharacters.Clear();
             _lineEndColumns.Clear();
 
-            _source = null;
-            _returnedCharacters = null;
-            _lineEndColumns = null;
+            _source = null!;
+            _returnedCharacters = null!;
+            _lineEndColumns = null!;
         }
     }
 }

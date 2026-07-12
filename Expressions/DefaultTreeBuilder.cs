@@ -16,14 +16,9 @@ public class DefaultTreeBuilder : IExpressionTreeBuilder
     /// <param name="expressions">The list of any sub-expression objects.</param>
     /// <param name="tag">The tag that goes with the type of term parsed.</param>
     /// <returns>The created term.</returns>
-    public IExpressionTerm CreateTerm(List<Token> tokens, List<IExpressionTerm> expressions, string tag)
+    public IExpressionTerm CreateTerm(List<Token> tokens, List<IExpressionTerm> expressions, string? tag)
     {
-        return new DefaultBasicTerm
-        {
-            Tokens = tokens,
-            Terms = expressions.Cast<DefaultExpressionTerm>().ToList(),
-            Tag = tag
-        };
+        return new DefaultBasicTerm(tokens, expressions.Cast<DefaultExpressionTerm>().ToList(), tag);
     }
 
     /// <summary>
@@ -36,12 +31,7 @@ public class DefaultTreeBuilder : IExpressionTreeBuilder
     /// <returns>A term that represents a unary operation.</returns>
     public IExpressionTerm CreateUnaryOperation(List<Token> tokens, IExpressionTerm term, bool isPrefix)
     {
-        return new DefaultUnaryOperation
-        {
-            Tokens = tokens,
-            Term = (DefaultExpressionTerm) term,
-            IsPrefix = isPrefix
-        };
+        return new DefaultUnaryOperation(tokens, (DefaultExpressionTerm) term, isPrefix);
     }
 
     /// <summary>
@@ -53,12 +43,7 @@ public class DefaultTreeBuilder : IExpressionTreeBuilder
     /// <returns>A term that represents a binary operation.</returns>
     public IExpressionTerm CreateBinaryOperation(List<Token> tokens, IExpressionTerm left, IExpressionTerm right)
     {
-        return new DefaultBinaryOperation
-        {
-            Tokens = tokens,
-            LeftTerm = (DefaultExpressionTerm) left,
-            RightTerm = (DefaultExpressionTerm) right
-        };
+        return new DefaultBinaryOperation(tokens, (DefaultExpressionTerm) left, (DefaultExpressionTerm) right);
     }
 
     /// <summary>
@@ -72,13 +57,8 @@ public class DefaultTreeBuilder : IExpressionTreeBuilder
     /// <returns>A term that represents a trinary operation.</returns>
     public IExpressionTerm CreateTrinaryOperation(List<Token> leftTokens, List<Token> rightTokens, IExpressionTerm left, IExpressionTerm middle, IExpressionTerm right)
     {
-        return new DefaultTrinaryOperation
-        {
-            Tokens = leftTokens,
-            RightTokens = rightTokens,
-            LeftTerm = (DefaultExpressionTerm) left,
-            MiddleTerm = (DefaultExpressionTerm) middle,
-            RightTerm = (DefaultExpressionTerm) right
-        };
+        return new DefaultTrinaryOperation(
+            leftTokens, rightTokens, (DefaultExpressionTerm) left, (DefaultExpressionTerm) middle,
+            (DefaultExpressionTerm) right);
     }
 }

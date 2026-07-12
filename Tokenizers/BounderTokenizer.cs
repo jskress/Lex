@@ -12,7 +12,7 @@ public class BounderTokenizer : Tokenizer
 
     private readonly string _bounders;
 
-    public BounderTokenizer(LexicalParser parser, string bounders = DefaultBounders) : base(parser)
+    public BounderTokenizer(LexicalParser parser, string? bounders = DefaultBounders) : base(parser)
     {
         _bounders = Normalize(bounders ?? DefaultBounders, "the set of bounder characters");
     }

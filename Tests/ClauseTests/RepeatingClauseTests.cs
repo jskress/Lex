@@ -1,3 +1,4 @@
+using Lex;
 using Lex.Clauses;
 using Lex.Dsl;
 using Lex.Parser;
@@ -12,12 +13,12 @@ public class RepeatingClauseTests : ClauseTestsBase
     public void TestConstructionErrors()
     {
         SequentialClauseParser parser = new SequentialClauseParser();
-        Exception exception = Assert.ThrowsException<ArgumentNullException>(
+        Exception exception = Assert.ThrowsExactly<ArgumentNullException>(
             () => new RepeatingClauseParser(null));
         
         Assert.AreEqual("Value cannot be null. (Parameter 'wrapped')", exception.Message);
 
-        exception = Assert.ThrowsException<ArgumentException>(
+        exception = Assert.ThrowsExactly<ArgumentException>(
             () => new RepeatingClauseParser(parser, 2, 1));
         
         Assert.AreEqual("Min (2) cannot be larger than max (1).", exception.Message);
@@ -108,6 +109,41 @@ public class RepeatingClauseTests : ClauseTestsBase
         AssertTokenException(
             () => Verify(parser, "this thing", clauseParser, This, null),
             "Not enough repeats");
+    }
+
+    [TestMethod]
+    public void TestNonProgressGuard()
+    {
+        LexicalParser parser = new();
+
+        _ = new IdTokenizer(parser);
+        _ = new WhitespaceTokenizer(parser);
+
+        parser.SetSource("thing".AsReader());
+
+        // A clause parser that (incorrectly) reports a match without consuming any input.
+        // Even with a small, bounded maximum, RepeatingClauseParser must refuse to accept
+        // this rather than silently looping (or, worse, looping forever for an unbounded
+        // repeat).
+        RepeatingClauseParser clauseParser = new (new ZeroWidthMatchClauseParser(), min: 0, max: 3);
+
+        AssertException(
+            () => clauseParser.TryParse(parser),
+            "The wrapped ZeroWidthMatchClauseParser matched without consuming any input; " +
+            "this would result in an infinite loop.");
+    }
+
+    /// <summary>
+    /// This clause parser deliberately violates the <see cref="ClauseParser"/> contract by
+    /// reporting a successful match without consuming anything from the parser.  It exists
+    /// solely to exercise <see cref="RepeatingClauseParser"/>'s guard against that.
+    /// </summary>
+    private class ZeroWidthMatchClauseParser : ClauseParser
+    {
+        protected override Clause TryParseClause(LexicalParser parser)
+        {
+            return new Clause { Tokens = [], Expressions = [] };
+        }
     }
 
     [TestMethod]
