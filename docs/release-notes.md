@@ -1,5 +1,15 @@
 ## Release Notes
 
+### 1.2.1
+
+- Bug fixes:
+  - Fixed expressions that mix operators of equal precedence with a higher-precedence
+    operator between them being grouped right-to-left instead of left-to-right.  Reducing the
+    pending operators stopped after a single reduction, which could leave two equal-precedence
+    operators adjacent, and the final pass then grouped that pair from the right.  For
+    example, `1 - 2 / 2 - 3` parsed as `1 - ((2 / 2) - 3)`, which evaluates to -1, instead of
+    `(1 - (2 / 2)) - 3`, which evaluates to 3.
+
 ### 1.2.0
 
 - Added the [`ClauseDispatcher`](../Clauses/ClauseDispatcher.cs) and

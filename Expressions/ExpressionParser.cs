@@ -277,19 +277,33 @@ public class ExpressionParser
     }
 
     /// <summary>
-    /// This method looks at the last two operators and, if the next to last one has a
+    /// This method looks at the last two operators and, while the next to last one has a
     /// precedence that is the same or larger than the last one, the next to last is
     /// combined into a single term.
     /// </summary>
+    /// <remarks>
+    /// It keeps going rather than reducing once, and that is the whole of what makes the final
+    /// reduction correct.  The list of operators is meant to hold precedences that rise strictly
+    /// from left to right -- that is the invariant the last pass leans on when it reduces from the
+    /// right -- and one reduction can leave the invariant broken.  Reducing the last pair of
+    /// <c>[minus, divide, minus]</c> gives <c>[minus, minus]</c>, which is not strictly rising, and
+    /// the last pass then groups that equal pair from the right: <c>a - (b / c - d)</c> where
+    /// <c>(a - b / c) - d</c> was written.  That is not a near miss, it is a different sum.
+    /// </remarks>
     /// <param name="terms">The current set of terms in the expression.</param>
     /// <param name="operators">The current set of operators in the expression.</param>
     private void TryToReduce(List<IExpressionTerm> terms, List<Operator> operators)
     {
-        int index1 = operators.Count - 2;
-        int index2 = index1 + 1;
+        while (operators.Count > 1)
+        {
+            int index1 = operators.Count - 2;
+            int index2 = index1 + 1;
 
-        if (operators[index1] >= operators[index2])
+            if (!(operators[index1] >= operators[index2]))
+                break;
+
             DoBinaryReduction(terms, operators, index1);
+        }
     }
 
     /// <summary>
