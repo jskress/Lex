@@ -444,6 +444,39 @@ public class ExpressionTests
             testCase.Run();
     }
 
+    [TestMethod]
+    public void TestOperatorsOfEqualPrecedenceGroupLeftToRight()
+    {
+        // Reducing keeps a stack of operators whose precedences are meant to rise strictly from left
+        // to right, because the last step then reduces from the right and gets the answer.  What broke
+        // that is a stack of three where reducing the last pair leaves the first two *equal*: the
+        // check ran once and stopped, the invariant was gone, and the final pass grouped the equal
+        // pair the wrong way round.
+        //
+        // "1 - 2 / 2 - 3" is the shortest thing that does it, and it wants ((1 - (2 / 2)) - 3).  It was
+        // coming out (1 - ((2 / 2) - 3)) -- which is not a rounding difference, it is a different sum:
+        // -1 as against 3.
+        foreach ((string source, string expected) in new[]
+                 {
+                     ("1 - 2 / 2 - 3", "(((1) - ((2) / (2))) - (3))"),
+                     ("1 - 2 - 3", "(((1) - (2)) - (3))"),
+                     ("1 - 2 * 3 - 4", "(((1) - ((2) * (3))) - (4))"),
+                     ("1 + 2 / 2 + 3", "(((1) + ((2) / (2))) + (3))"),
+                     ("8 / 4 / 2", "(((8) / (4)) / (2))"),
+                     ("1 - 2 - 3 - 4", "((((1) - (2)) - (3)) - (4))"),
+                     ("1 - 2 / 2 - 3 / 3 - 4",
+                         "((((1) - ((2) / (2))) - ((3) / (3))) - (4))"),
+
+                     // The cases that were already right, kept so a fix cannot trade one for another.
+                     ("1 - 2 * 3", "((1) - ((2) * (3)))"),
+                     ("1 * 2 - 3", "(((1) * (2)) - (3))"),
+                     ("1 * 2 - 3 * 4", "(((1) * (2)) - ((3) * (4)))")
+                 })
+        {
+            Assert.AreEqual(expected, ParseToTerm(source).Text, $"parsing \"{source}\"");
+        }
+    }
+
     private static DefaultExpressionTerm ParseToTerm(string source)
     {
         Dsl dsl = LexicalDslFactory.CreateFrom(DslSpec);
