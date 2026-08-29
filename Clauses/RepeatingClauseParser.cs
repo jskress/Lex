@@ -49,70 +49,94 @@ public class RepeatingClauseParser : ClauseParser, IClauseParserParent
         List<IExpressionTerm> expressions = [];
         string? lastMatchedTag = null;
         int count = 0;
+        bool markPending = true;
 
-        while (true)
+        // See the same call in SequentialClauseParser for why falling short of the minimum
+        // needs the parser's help to undo, rather than just handing the tokens back.
+        parser.MarkPosition();
+
+        try
         {
-            if (_wrapped is ExpressionClauseParser expressionClauseParser)
-                expressionClauseParser.SetIsOptional(expressions.Count >= _min);
-
-            Token? before = parser.PeekNextToken();
-            Clause? wrappedResult = _wrapped.TryParse(parser);
-
-            if (wrappedResult != null)
+            while (true)
             {
-                // A clause parser that reports a match without consuming any input would
-                // cause us to loop forever (or, for a bounded repeat, silently duplicate a
-                // phantom match).  Either way, that's a bug in the wrapped clause parser, so
-                // fail loudly and immediately instead.
-                if (ReferenceEquals(before, parser.PeekNextToken()))
+                if (_wrapped is ExpressionClauseParser expressionClauseParser)
+                    expressionClauseParser.SetIsOptional(expressions.Count >= _min);
+
+                Token? before = parser.PeekNextToken();
+                Clause? wrappedResult = _wrapped.TryParse(parser);
+
+                if (wrappedResult != null)
                 {
-                    throw new Exception(
-                        $"The wrapped {_wrapped.GetType().Name} matched without consuming " +
-                        "any input; this would result in an infinite loop.");
-                }
-
-                tokens.AddRange(wrappedResult.Tokens);
-                expressions.AddRange(wrappedResult.Expressions);
-
-                count++;
-
-                if (count >= _max)
-                {
-                    return new Clause
+                    // A clause parser that reports a match without consuming any input would
+                    // cause us to loop forever (or, for a bounded repeat, silently duplicate a
+                    // phantom match).  Either way, that's a bug in the wrapped clause parser, so
+                    // fail loudly and immediately instead.
+                    if (ReferenceEquals(before, parser.PeekNextToken()))
                     {
-                        Tag = wrappedResult.Tag,
-                        Tokens = tokens,
-                        Expressions = expressions
-                    };
-                }
+                        throw new Exception(
+                            $"The wrapped {_wrapped.GetType().Name} matched without consuming " +
+                            "any input; this would result in an infinite loop.");
+                    }
 
-                lastMatchedTag = wrappedResult.Tag ?? lastMatchedTag;
-            }
-            else
-            {
-                if (count >= _min)
-                {
-                    return new Clause
+                    tokens.AddRange(wrappedResult.Tokens);
+                    expressions.AddRange(wrappedResult.Expressions);
+
+                    count++;
+
+                    if (count >= _max)
                     {
-                        Tag = lastMatchedTag,
-                        Tokens = tokens,
-                        Expressions = expressions
-                    };
-                }
+                        markPending = false;
 
-                if (expressions.Count > 0)
+                        parser.ReleaseMark();
+
+                        return new Clause
+                        {
+                            Tag = wrappedResult.Tag,
+                            Tokens = tokens,
+                            Expressions = expressions
+                        };
+                    }
+
+                    lastMatchedTag = wrappedResult.Tag ?? lastMatchedTag;
+                }
+                else
                 {
-                    throw new TokenException(_errorMessage ?? "Syntax error near here.")
-                        { Token = parser.GetNextToken() };
+                    if (count >= _min)
+                    {
+                        markPending = false;
+
+                        parser.ReleaseMark();
+
+                        return new Clause
+                        {
+                            Tag = lastMatchedTag,
+                            Tokens = tokens,
+                            Expressions = expressions
+                        };
+                    }
+
+                    // Give back everything the attempt consumed.  Rolling back rather than
+                    // returning the tokens by hand matters when the wrapped clause parsed an
+                    // expression, since that hands back a term rather than the tokens behind it.
+                    markPending = false;
+
+                    parser.RollbackToMark();
+
+                    // Note that the rollback above is what lets this report the start of the
+                    // clause we failed to match, rather than wherever we happened to give up.
+                    if (_errorMessage != null)
+                        throw new TokenException(_errorMessage) { Token = parser.GetNextToken() };
+
+                    return null;
                 }
-
-                parser.ReturnTokens(tokens);
-
-                if (_errorMessage != null)
-                    throw new TokenException(_errorMessage) { Token = parser.GetNextToken() };
-
-                return null;
             }
+        }
+        finally
+        {
+            // The wrapped clause may throw for a hard error; unwind the attempt so the parser
+            // is left somewhere sane if that exception gets caught.
+            if (markPending)
+                parser.RollbackToMark();
         }
     }
 }

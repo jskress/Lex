@@ -70,7 +70,10 @@ from calling the `TryParseClause()` method.
 - the clause parser is unable to match a series of tokens **and** it is not configured to
   report an error.  In this case, the underlying token stream should be restored to its
   original state as of when `TryParseClause()` was called.  The lexical parser class
-  provides you a `RetornTokens()` method to help with this.
+  provides you a `ReturnTokens()` method to help with this.  If your clause parser wraps
+  others -- especially any that may parse an expression, since those hand back a term rather
+  than the tokens behind it -- call `MarkPosition()` on entry and `RollbackToMark()` instead;
+  it restores the stream no matter which of your sub-parsers kept what.
 - The clause parser is unable to match a series of tokens **and** it should report an error.
   In this case, the underlying token stream should be restored to its original state as of
   when `TryParseClause()` was called.  Then, a `TokenException` should be thrown with an

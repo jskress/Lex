@@ -1,5 +1,32 @@
 ## Release Notes
 
+### 1.3.0
+
+- A clause that has already consumed an expression can now be backed out of.  Previously, if
+  a term after the expression failed to match, the clause could not restore the token stream
+  -- an expression hands back a term, not the tokens that went into it -- so it threw
+  "Syntax error near here." instead of reporting no match.  That made a switch clause unable
+  to try an alternative containing an expression and fall through to the next one, so
+  `[ interval | _expression ]` could never tell `(0, 3]` from `(balls)`.  This was previously
+  described as a limitation in [the DSL specification docs](dsl-specification-dsl.md#the-term-clause),
+  along with the advice to put an error message on every term following an expression; that
+  advice is no longer necessary, though it still works, since a term with an error message
+  remains a hard error.
+  - Two things to be aware of.  A term that carries an explicit error message still throws
+    rather than backtracking, so grammars written to the old advice behave exactly as they
+    did.  And giving tokens back does not undo work done while reading them: an
+    `IExpressionTreeBuilder` will already have been asked to build the terms of an expression
+    that is then abandoned, so keep such builders free of side effects beyond building the
+    term.
+- Added `LexicalParser.MarkPosition()`, `RollbackToMark()` and `ReleaseMark()` for marking a
+  spot in the token stream and returning to it.  This is what the above is built on, and it's
+  the tool to reach for in your own clause parsers when `ReturnTokens()` isn't enough --
+  notably when a sub-parser consumed tokens it cannot hand back, whether into an expression
+  or into a suppressed term choice.  Marks nest, and each must be resolved exactly once.  See
+  [The Parser](the-parser.md).
+- The rollback covers everything the attempt consumed, not merely what the clause itself got
+  back, so tokens a term choice was told to suppress are restored along with the rest.
+
 ### 1.2.1
 
 - Bug fixes:

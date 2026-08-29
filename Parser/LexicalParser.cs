@@ -34,6 +34,8 @@ public sealed class LexicalParser : IDisposable
 
     private readonly List<Tokenizer> _tokenizers = [];
     private readonly LinkedList<Token> _returnedTokens = [];
+    private readonly List<Token> _consumedSinceMark = [];
+    private readonly Stack<int> _marks = new ();
 
     private RewindingStreamReader? _source;
     private int _line;
@@ -82,6 +84,24 @@ public sealed class LexicalParser : IDisposable
     /// <returns>The next token that was parsed, or <c>null</c>, if there are no more
     /// tokens.</returns>
     public Token? GetNextToken()
+    {
+        Token? token = ReadNextToken();
+
+        // Anything handed out while a mark is pending has to be remembered so that a
+        // rollback to that mark can put it back.  See MarkPosition().
+        if (token != null && _marks.Count > 0)
+            _consumedSinceMark.Add(token);
+
+        return token;
+    }
+
+    /// <summary>
+    /// This is a helper method that does the actual work of reading the next token, without
+    /// the position bookkeeping that <see cref="GetNextToken"/> layers on top of it.
+    /// </summary>
+    /// <returns>The next token that was parsed, or <c>null</c>, if there are no more
+    /// tokens.</returns>
+    private Token? ReadNextToken()
     {
         EnsureNotDisposed();
 
@@ -350,8 +370,18 @@ public sealed class LexicalParser : IDisposable
     {
         EnsureNotDisposed();
 
-        if (token != null)
-            _returnedTokens.AddLast(token);
+        if (token == null)
+            return;
+
+        _returnedTokens.AddLast(token);
+
+        // Returning a token un-consumes it, so it must come back off the record of what
+        // we've handed out since the pending mark; otherwise a rollback would hand it back a
+        // second time.  This leans on tokens being returned in the reverse order they were
+        // read, which is exactly what this method's contract asks of callers.
+        if (_marks.Count > 0 && _consumedSinceMark.Count > 0 &&
+            ReferenceEquals(_consumedSinceMark[^1], token))
+            _consumedSinceMark.RemoveAt(_consumedSinceMark.Count - 1);
     }
 
     /// <summary>
@@ -373,6 +403,79 @@ public sealed class LexicalParser : IDisposable
     }
 
     /// <summary>
+    /// This method is used to mark the parser's current position so that it can be returned
+    /// to later, by way of <see cref="RollbackToMark"/>.  Use this when you need to try
+    /// something that may not pan out, and have the parser end up where it started when it
+    /// doesn't.
+    /// </summary>
+    /// <remarks>
+    /// This exists because returning tokens by hand can only undo what the caller actually
+    /// holds tokens for.  A clause that consumes an expression, for one, gets back a term
+    /// rather than the tokens that went into it, and so has nothing to hand back; the same
+    /// goes for tokens a term choice was told to suppress.  Marking records what the parser
+    /// hands out, so a rollback can undo the lot regardless of who kept what.
+    /// <para>
+    /// Every mark must be resolved exactly once, by either <see cref="RollbackToMark"/> or
+    /// <see cref="ReleaseMark"/>.  Marks nest, so an inner one must be resolved before the
+    /// one that encloses it.
+    /// </para>
+    /// <para>
+    /// Note that rolling the tokens back does not roll back any work a consumer did while
+    /// reading them.  An <see cref="Lex.Expressions.IExpressionTreeBuilder"/>, in particular,
+    /// will already have been asked to build the terms of an expression that is about to be
+    /// abandoned, so keep such builders free of side effects beyond building the term.
+    /// </para>
+    /// </remarks>
+    public void MarkPosition()
+    {
+        EnsureNotDisposed();
+
+        _marks.Push(_consumedSinceMark.Count);
+    }
+
+    /// <summary>
+    /// This method is used to return the parser to the position of the most recent mark,
+    /// resolving that mark.  Every token handed out since it was set is returned to the
+    /// parser, so that the next read picks up where the mark was set.
+    /// </summary>
+    public void RollbackToMark()
+    {
+        EnsureNotDisposed();
+
+        if (_marks.Count == 0)
+            throw new InvalidOperationException("There is no marked position to roll back to.");
+
+        int mark = _marks.Pop();
+
+        // These go straight onto the returned-token stack rather than through ReturnToken(),
+        // since we truncate the record ourselves right after.
+        for (int index = _consumedSinceMark.Count - 1; index >= mark; index--)
+            _returnedTokens.AddLast(_consumedSinceMark[index]);
+
+        _consumedSinceMark.RemoveRange(mark, _consumedSinceMark.Count - mark);
+    }
+
+    /// <summary>
+    /// This method is used to resolve the most recent mark without moving the parser,
+    /// keeping everything consumed since it was set.  Call this once whatever the mark was
+    /// guarding has worked out.
+    /// </summary>
+    public void ReleaseMark()
+    {
+        EnsureNotDisposed();
+
+        if (_marks.Count == 0)
+            throw new InvalidOperationException("There is no marked position to release.");
+
+        _marks.Pop();
+
+        // With no mark left pending, nothing can roll back any more, so the record can go
+        // rather than grow for the rest of the parse.
+        if (_marks.Count == 0)
+            _consumedSinceMark.Clear();
+    }
+
+    /// <summary>
     /// This method is used to close the current character source and clean up after
     /// ourselves.
     /// </summary>
@@ -382,6 +485,8 @@ public sealed class LexicalParser : IDisposable
 
         _source?.Dispose();
         _returnedTokens.Clear();
+        _consumedSinceMark.Clear();
+        _marks.Clear();
 
         _source = null;
     }

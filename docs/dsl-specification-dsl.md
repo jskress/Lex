@@ -400,11 +400,19 @@ of five things:
   <img alt="Defining a sequential clause" src="images/dsl-dsl/term.svg">
 </picture>
 
-When the term is an expression, it is important to know that, at that point, any terms
-that follow it must parse successfully since parsing an expression consumes all the
-relevant tokens, preventing the containing clause from being rolled back as happens, say,
-when a sequence isn't fully captured.  As such, you'll want to include an error message
-on all terms in the clause that follow the expression.
+When the term is an expression, the containing clause can still be backed out of if one of
+the terms that follow it fails to match.  The parser gives back every token the expression
+consumed, so a switch clause can try an alternative that parses an expression and fall
+through to the next one when that alternative doesn't pan out -- which is what lets a switch
+of `[ interval | _expression ]` tell `(0, 3]` from `(balls)`.
+
+Note that giving the tokens back does not undo any work done while reading them.  Your
+expression tree builder will already have been asked to build the terms of an expression
+that is then abandoned, so keep it free of side effects beyond building the term itself.
+
+If you would rather have a mismatch after the expression reported than quietly backtracked,
+put an error message on the terms that follow it; a term with an error message is a hard
+error, and still throws.
 
 This may optionally be followed by a [repetition clause](#the-repetition-clause).  Finally,
 a coalesce operator and string may be provided.
