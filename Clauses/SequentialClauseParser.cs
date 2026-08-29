@@ -176,34 +176,51 @@ public class SequentialClauseParser : ClauseParser, IClauseParserParent
     {
         List<Token> tokens = [];
         List<IExpressionTerm> expressions = [];
+        bool markPending = true;
 
-        foreach (Clause? parsed in Children
-                     .Select(clause => clause.TryParse(parser)))
+        // A sub-clause that fails part way through leaves us having consumed tokens we now
+        // need to give back, and we cannot do that by hand for all of them: a sub-clause that
+        // parsed an expression hands back a term, not the tokens that went into it.  Marking
+        // the position lets the parser undo the whole attempt either way, so that a caller
+        // trying another alternative sees the parser exactly where it started.
+        parser.MarkPosition();
+
+        try
         {
-            if (parsed != null)
+            foreach (ClauseParser child in Children)
             {
+                Clause? parsed = child.TryParse(parser);
+
+                if (parsed == null)
+                {
+                    markPending = false;
+
+                    parser.RollbackToMark();
+
+                    return null;
+                }
+
                 tokens.AddRange(parsed.Tokens);
                 expressions.AddRange(parsed.Expressions);
             }
-            else
+
+            markPending = false;
+
+            parser.ReleaseMark();
+
+            return new Clause
             {
-                if (expressions.Count > 0)
-                {
-                    throw new TokenException("Syntax error near here.")
-                        { Token = parser.GetNextToken() };
-                }
-
-                parser.ReturnTokens(tokens);
-
-                return null;
-            }
+                Tag = _onMatchTag,
+                Tokens = tokens,
+                Expressions = expressions
+            };
         }
-
-        return new Clause
+        finally
         {
-            Tag = _onMatchTag,
-            Tokens = tokens,
-            Expressions = expressions
-        };
+            // A sub-clause may throw for a hard error; unwind the attempt so the parser is
+            // left somewhere sane if that exception gets caught.
+            if (markPending)
+                parser.RollbackToMark();
+        }
     }
 }

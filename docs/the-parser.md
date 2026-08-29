@@ -213,6 +213,42 @@ were read from the parser.
 
 If `null` is passed as the token enumeration, then the method quietly does nothing.
 
+##### `void MarkPosition()`
+
+Use `MarkPosition()` to remember where the parser currently is, so that you can bring it
+back there later with `RollbackToMark()`.  Use this when you need to try something that may
+not pan out, and want the parser to end up where it started when it doesn't.
+
+This exists because returning tokens by hand can only undo what you actually hold tokens
+for.  A clause that consumes an expression, for one, gets a term back rather than the tokens
+that went into it, and so has nothing to hand back; the same goes for tokens a term choice
+was told to suppress.  Marking records what the parser hands out, so a rollback can undo the
+lot regardless of who kept what.
+
+Every mark must be resolved exactly once, by either `RollbackToMark()` or `ReleaseMark()`.
+Marks nest, so an inner one must be resolved before the one that encloses it.
+
+Note that rolling the tokens back does not roll back any work you did while reading them.
+An expression tree builder, in particular, will already have been asked to build the terms
+of an expression that is about to be abandoned, so keep such builders free of side effects
+beyond building the term.
+
+##### `void RollbackToMark()`
+
+Use `RollbackToMark()` to return the parser to the position of the most recent mark, which
+also resolves that mark.  Every token handed out since the mark was set is returned to the
+parser, so the next read picks up where the mark was set.
+
+An `InvalidOperationException` is thrown if there is no mark to roll back to.
+
+##### `void ReleaseMark()`
+
+Use `ReleaseMark()` to resolve the most recent mark without moving the parser, keeping
+everything consumed since it was set.  Call this once whatever the mark was guarding has
+worked out.
+
+An `InvalidOperationException` is thrown if there is no mark to release.
+
 ##### `void Close()`
 
 Use the `Close()` to clean up at the end of a parsing task.  It is automatically called
