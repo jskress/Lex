@@ -158,10 +158,24 @@ You can configure the style of keyword the tokenizer will work with, represented
 - `UpperCase` -- Keywords will be treated as case-insensitive.  The test in the resulting
   keyword tokens will be forced to upper-case.
 
+A keyword is only a keyword when it is a whole word.  The tokenizer reads the entire word
+first and only then looks it up in its list, so a keyword is never taken out of the middle of
+something longer: with `flaw` as a keyword, the text `flaw2` is the single identifier you
+wrote and not the keyword `flaw` with a stray `2` left after it.
+
+Where a word ends is the identifier tokenizer's business, so the keyword tokenizer asks the
+identifier tokenizer registered with the same parser what an identifier may start with and
+contain.  If you have told that tokenizer an identifier may contain a `$`, then `flaw$x` is
+one identifier here too.  Letters always count as part of a word regardless, so narrowing
+what an identifier may be will not cost you your keywords; and with no identifier tokenizer
+registered at all, a word is simply a run of letters.
+
 If you include the identifier tokenizer when configuring your parser, and that tokenizer
 allows for letter-only identifiers, be sure to create and configure the keyword tokenizer
 first.  Otherwise, the identifier tokenizer will capture your keywords; they will be
-reported as identifiers instead of keywords.
+reported as identifiers instead of keywords.  The order the two are registered in is what
+decides this; the keyword tokenizer looks the identifier tokenizer up when it needs it, so
+either order works for the word-boundary rule above.
 
 The tokenizer is provided by the [`KeywordTokenizer`](../Tokenizers/KeywordTokenizer.cs)
 class.  The `Style` property controls the style that the tokenizer will use.  By default,

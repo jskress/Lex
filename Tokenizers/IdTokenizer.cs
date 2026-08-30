@@ -58,6 +58,16 @@ public class IdTokenizer : Tokenizer
     /// </summary>
     public LetterCaseStyle Style { get; set; } = LetterCaseStyle.AsIs;
 
+    /// <summary>
+    /// This property holds the characters that an identifier may start with.
+    /// </summary>
+    public string Starters => _starters;
+
+    /// <summary>
+    /// This property holds the characters that an identifier may contain beyond the first.
+    /// </summary>
+    public string Members => _members;
+
     private readonly string _starters;
     private readonly string _members;
 

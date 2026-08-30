@@ -28,6 +28,11 @@ public abstract class FixedListTokenizer : Tokenizer
             .ToArray();
     }
 
+    /// <summary>
+    /// This property provides the current set of possibilities to subclasses.
+    /// </summary>
+    protected string[] Possibilities => _possibilities;
+
     private string[] _possibilities;
 
     protected FixedListTokenizer(LexicalParser parser, HashSet<string> possibilities, string noun)
