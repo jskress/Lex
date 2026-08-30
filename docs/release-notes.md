@@ -1,5 +1,30 @@
 ## Release Notes
 
+### 1.4.0
+
+- Fixed the keyword tokenizer reporting a keyword that it had taken out of the middle of a
+  longer word.  It matched its keywords against the character stream directly, so with `flaw`
+  as a keyword, `flaw2` came out as the keyword `flaw` followed by the number `2` rather than
+  as the one identifier that was written; `flaw_x` went the same way.  Often enough the result
+  was not a wrong token but a hard error: with `in` and `int` as keywords, `int8` lexed as the
+  keyword `int` followed by an `8` that nothing would then accept.  The tokenizer now reads the
+  whole word first and only then looks it up, which is how keywords are meant to be lexed and
+  how the original Java version of this library did it.
+- Where a word ends is now the identifier tokenizer's business.  The keyword tokenizer asks the
+  `IdTokenizer` registered with the same parser what an identifier may start with and contain,
+  rather than going by its own notion of a letter, so custom identifier alphabets are honored:
+  tell the identifier tokenizer that a `$` may appear in an identifier and `flaw$x` is one
+  identifier here too.  It is looked up when needed, so either registration order works.
+  - Letters still count as part of a word whatever the identifier alphabet says, so narrowing
+    what an identifier may be does not cost you your keywords.  With no identifier tokenizer
+    registered, a word is just a run of letters, which leaves such parsers lexing exactly as
+    they did.
+- Keyword casing and identifier casing remain entirely separate settings; nothing here changes
+  how either is applied.
+- Added `IdTokenizer.Starters` and `IdTokenizer.Members` so the characters an identifier was
+  configured with can be read back.  `FixedListTokenizer` now offers its possibilities to
+  subclasses through a protected `Possibilities` property.
+
 ### 1.3.0
 
 - A clause that has already consumed an expression can now be backed out of.  Previously, if
